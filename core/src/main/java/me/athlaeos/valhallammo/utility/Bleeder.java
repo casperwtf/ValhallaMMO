@@ -3,7 +3,6 @@ package me.athlaeos.valhallammo.utility;
 import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.configuration.ConfigManager;
 import me.athlaeos.valhallammo.dom.CombatType;
-import me.athlaeos.valhallammo.dom.MinecraftVersion;
 import me.athlaeos.valhallammo.event.EntityBleedEvent;
 import me.athlaeos.valhallammo.hooks.WorldGuardHook;
 import me.athlaeos.valhallammo.playerstats.AccumulativeStatManager;
@@ -79,7 +78,7 @@ public class Bleeder {
         else if (WorldGuardHook.inDisabledRegion(bleeder.getLocation(), WorldGuardHook.VMMO_COMBAT_BLEED)) return;
         ValhallaMMO.getInstance().getServer().getScheduler().runTaskLater(ValhallaMMO.getInstance(), () -> {
             BleedingInstance instance = bleedingEntities.get(bleeder.getUniqueId());
-            double resistance = AccumulativeStatManager.getRelationalStats("BLEED_RESISTANCE", bleeder, causedBy, true);
+            double resistance = AccumulativeStatManager.getCachedRelationalStats("BLEED_RESISTANCE", bleeder, causedBy, 1000, true);
             EntityBleedEvent event = new EntityBleedEvent(bleeder, causedBy, combatType, damage, resistance, duration, stacks);
             ValhallaMMO.getInstance().getServer().getPluginManager().callEvent(event);
             if (!event.isCancelled()){

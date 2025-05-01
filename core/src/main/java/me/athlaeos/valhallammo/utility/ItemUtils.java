@@ -561,11 +561,8 @@ public class ItemUtils {
 
     public static Material stringToMaterial(String material, Material def){
         if (material == null || material.isEmpty()) return def;
-        try {
-            return Material.valueOf(material);
-        } catch (IllegalArgumentException ignored){
-            return def;
-        }
+        Material found = Material.getMaterial(material);
+        return found == null ? def : found;
     }
 
     public static EquipmentSlot getEquipmentSlot(ItemMeta meta){
@@ -581,8 +578,9 @@ public class ItemUtils {
 
     public static void removeIfLoreContains(ItemMeta meta, String find){
         if (meta == null || meta.getLore() == null) return;
+        final String stripped = ChatColor.stripColor(Utils.chat(find));
         List<String> lore = meta.getLore();
-        lore.removeIf(l -> l.contains(ChatColor.stripColor(Utils.chat(find))));
+        lore.removeIf(l -> l.contains(stripped));
         meta.setLore(lore);
     }
 

@@ -283,11 +283,9 @@ public class ItemAttributesRegistry {
         if (meta == null) return;
         if (stats == null || stats.isEmpty()) {
             clean(meta);
-        } else {
-            meta.getPersistentDataContainer().set(DEFAULT_STATS, PersistentDataType.STRING,
-                    stats.values().stream().map(s -> s.getAttribute() + ":" + s.getValue() + ":" + s.getOperation() + ":" + s.isHidden())
-                            .collect(Collectors.joining(";")));
+            return;
         }
+        meta.getPersistentDataContainer().set(DEFAULT_STATS, PersistentDataType.STRING, serializeStats(stats.values()));
     }
 
     /**
@@ -364,54 +362,67 @@ public class ItemAttributesRegistry {
         if (meta == null) return;
         if (stats == null || stats.isEmpty()) {
             clean(meta);
-        } else {
-            meta.setAttributeModifiers(null);
-            registeredAttributes.values().stream().filter(w -> stats.containsKey(w.getAttribute())).forEach(w -> w.onRemove(meta));
+            return;
+        }
 
-            Map<String, AttributeWrapper> defaultStats = getStats(meta, true);
-            Collection<String> exclude = new HashSet<>();
-            List<AttributeWrapper> orderedWrappers = new ArrayList<>(stats.values());
-            orderedWrappers.sort(Comparator.comparingInt((AttributeWrapper a) -> a.getAttributeName().length()));
-            //Collections.reverse(orderedWrappers);
-            for (AttributeWrapper wrapper : orderedWrappers){
-                if (!defaultStats.containsKey(wrapper.getAttribute())) {
-                    exclude.add(wrapper.getAttribute());
-                    continue;
-                }
+        meta.setAttributeModifiers(null);
+        for (AttributeWrapper wrapper : stats.values()) {
+            if (registeredAttributes.containsKey(wrapper.getAttribute())) {
+                wrapper.onRemove(meta);
+            }
+        }
 
-                if (wrapper.isVanilla()){
-                    Attribute attribute = wrapper.getVanillaAttribute();
-                    double value = wrapper.getValue();
-                    if (attribute == Attribute.GENERIC_ATTACK_SPEED && wrapper.getOperation() == AttributeModifier.Operation.ADD_NUMBER) value -= 4; // player default attack speed
-                    if (attribute == Attribute.GENERIC_ATTACK_DAMAGE && wrapper.getOperation() == AttributeModifier.Operation.ADD_NUMBER) value -= 1; // player default attack damage
-                    EquipmentSlot slot = ItemUtils.getEquipmentSlot(meta);
-                    if (CustomFlag.hasFlag(meta, CustomFlag.ATTRIBUTE_FOR_HELMET)) slot = EquipmentSlot.HEAD;
-                    else if (CustomFlag.hasFlag(meta, CustomFlag.ATTRIBUTE_FOR_BOTH_HANDS))
-                        meta.addAttributeModifier(attribute, new AttributeModifier(
-                                UUID.randomUUID(),
-                                wrapper.getAttribute().replaceFirst("_", ".").toLowerCase(java.util.Locale.US),
-                                value,
-                                wrapper.getOperation(),
-                                EquipmentSlot.OFF_HAND
-                        ));
-                    meta.addAttributeModifier(attribute, new AttributeModifier(
-                            UUID.randomUUID(),
-                            wrapper.getAttribute().replaceFirst("_", ".").toLowerCase(java.util.Locale.US),
-                            value,
-                            wrapper.getOperation(),
-                            slot
-                    ));
-                }
-                wrapper.onApply(meta);
+        Map<String, AttributeWrapper> defaultStats = getStats(meta, true);
+        Collection<String> exclude = new HashSet<>();
+        List<AttributeWrapper> orderedWrappers = new ArrayList<>(stats.values());
+        orderedWrappers.sort(Comparator.comparingInt(wrapper -> wrapper.getAttributeName().length()));
+        //Collections.reverse(orderedWrappers);
+        for (AttributeWrapper wrapper : orderedWrappers){
+            if (!defaultStats.containsKey(wrapper.getAttribute())) {
+                exclude.add(wrapper.getAttribute());
+                continue;
             }
 
-            meta.getPersistentDataContainer().set(ACTUAL_STATS, PersistentDataType.STRING,
-                    stats.values().stream()
-                            .filter(s -> !exclude.contains(s.getAttribute()))
-                            .map(s -> s.getAttribute() + ":" + s.getValue() + ":" + s.getOperation() + ":" + s.isHidden())
-                            .collect(Collectors.joining(";"))
-            );
+            if (wrapper.isVanilla()){
+                Attribute attribute = wrapper.getVanillaAttribute();
+                double value = wrapper.getValue();
+                if (attribute == Attribute.GENERIC_ATTACK_SPEED && wrapper.getOperation() == AttributeModifier.Operation.ADD_NUMBER) value -= 4; // player default attack speed
+                else if (attribute == Attribute.GENERIC_ATTACK_DAMAGE && wrapper.getOperation() == AttributeModifier.Operation.ADD_NUMBER) value -= 1; // player default attack damage
+                EquipmentSlot slot = ItemUtils.getEquipmentSlot(meta);
+                if (CustomFlag.hasFlag(meta, CustomFlag.ATTRIBUTE_FOR_HELMET)) slot = EquipmentSlot.HEAD;
+                else if (CustomFlag.hasFlag(meta, CustomFlag.ATTRIBUTE_FOR_BOTH_HANDS))
+                    meta.addAttributeModifier(attribute, new AttributeModifier(
+                            UUID.randomUUID(),
+                            wrapper.getAttribute().replaceFirst("_", ".").toLowerCase(Locale.US),
+                            value,
+                            wrapper.getOperation(),
+                            EquipmentSlot.OFF_HAND
+                    ));
+                meta.addAttributeModifier(attribute, new AttributeModifier(
+                        UUID.randomUUID(),
+                        wrapper.getAttribute().replaceFirst("_", ".").toLowerCase(Locale.US),
+                        value,
+                        wrapper.getOperation(),
+                        slot
+                ));
+            }
+            wrapper.onApply(meta);
         }
+
+        Collection<AttributeWrapper> applied = new HashSet<>(stats.values());
+        applied.removeIf(wrapper -> exclude.contains(wrapper.getAttribute()));
+        meta.getPersistentDataContainer().set(ACTUAL_STATS, PersistentDataType.STRING, serializeStats(applied));
+    }
+
+    private static String serializeStats(Collection<AttributeWrapper> wrappers) {
+        StringBuilder saved = new StringBuilder();
+        for (AttributeWrapper wrapper : wrappers) {
+            if (!saved.isEmpty()) {
+                saved.append(';');
+            }
+            saved.append(wrapper.getAttribute()).append(':').append(wrapper.getValue()).append(':').append(wrapper.getOperation()).append(':').append(wrapper.isHidden());
+        }
+        return saved.toString();
     }
 
     /**
