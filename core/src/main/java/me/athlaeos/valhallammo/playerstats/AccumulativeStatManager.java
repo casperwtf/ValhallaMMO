@@ -22,6 +22,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("unused")
 public class AccumulativeStatManager {
@@ -421,7 +422,7 @@ public class AccumulativeStatManager {
         }
     }
 
-    private static final Map<UUID, Map<String, Map.Entry<Long, Double>>> statCache = new HashMap<>();
+    private static final Map<UUID, Map<String, Map.Entry<Long, Double>>> statCache = new ConcurrentHashMap<>();
 
     private static long lastMapCleanup = System.currentTimeMillis();
 
