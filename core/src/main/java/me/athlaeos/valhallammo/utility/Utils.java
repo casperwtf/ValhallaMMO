@@ -315,7 +315,7 @@ public class Utils {
      */
     public static String chat(String message) {
         if (StringUtils.isEmpty(message)) return "";
-        if (miniMessageSupported) message = convertMiniMessage(message);
+        if (false) message = convertMiniMessage(message);
         return vanillaChat(message);
     }
 

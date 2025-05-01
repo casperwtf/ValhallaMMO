@@ -329,45 +329,9 @@ public class SkillTreeMenu extends Menu {
                                             0; // not unlocked
 
                     List<String> lore = new ArrayList<>();
-                    TranslationManager.getListTranslation("skilltree_perk_format").forEach(l -> {
-                        if (l.contains("%description%")) {
-                            String description = p.getDescription();
-                            for (PerkReward reward : p.getRewards()) description = description.replace("{" + reward.getName() + "}", reward.rewardPlaceholder());
-                            lore.addAll(Utils.chat(StringUtils.separateStringIntoLines(description, 40)));
-                        } else if (UnlockConditionRegistry.getValuePlaceholders().stream().anyMatch(con -> l.contains(String.format("%%%s%%", con)))) { // if lore contains a value placeholder
-                            UnlockCondition condition = p.getConditions().stream().filter(con -> l.contains(String.format("%%%s%%", con.getValuePlaceholder()))).findAny().orElse(null);
-                            if (unlockedStatus == 0 && condition != null && condition.getConditionMessages() != null && !condition.getConditionMessages().isEmpty()) lore.addAll(Utils.chat(condition.getConditionMessages()));
-                        } else if (UnlockConditionRegistry.getFailurePlaceholders().stream().anyMatch(con -> l.contains(String.format("%%%s%%", con)))) { // if lore contains a failure placeholder
-                            UnlockCondition condition = p.getConditions().stream().filter(con -> l.contains(String.format("%%%s%%", con.getFailurePlaceholder()))).findAny().orElse(null);
-                            if (unlockedStatus == 0 && !p.metConditionRequirements(target, false) && condition != null && !StringUtils.isEmpty(condition.getFailedConditionMessage())) lore.add(Utils.chat(condition.getFailedConditionMessage()));
-                        } else if (ResourceExpenseRegistry.getExpenses().values().stream().anyMatch(con -> l.contains(con.getCostPlaceholder()))) { // if lore contains a cost placeholder
-                            ResourceExpense condition = p.getExpenses().stream().filter(con -> l.contains(con.getCostPlaceholder())).findAny().orElse(null);
-                            if (unlockedStatus == 0 && condition != null && !StringUtils.isEmpty(condition.getCostMessage())) lore.addAll(StringUtils.separateStringIntoLines(Utils.chat(condition.getCostMessage()), 40));
-                        } else if (ResourceExpenseRegistry.getExpenses().values().stream().anyMatch(con -> l.contains(con.getInsufficientCostPlaceholder()))) { // if lore contains a cost placeholder
-                            ResourceExpense condition = p.getExpenses().stream().filter(con -> l.contains(con.getInsufficientCostPlaceholder())).findAny().orElse(null);
-                            if (unlockedStatus == 0 && condition != null && !condition.canPurchase(target) && !StringUtils.isEmpty(condition.getInsufficientFundsMessage())) lore.add(Utils.chat(condition.getInsufficientFundsMessage()));
-                        } else if (l.contains("%warning_levels%")){
-                            if (unlockedStatus == 0 && !p.metLevelRequirement(target) && !StringUtils.isEmpty(perk_requirement_warning_levels)) lore.add(Utils.chat(perk_requirement_warning_levels));
-                        } else if (l.contains("%status_unlocked%")){
-                            String status = switch (unlockedStatus) {
-                                case 1 -> perk_requirement_status_unlocked;
-                                case 2 -> perk_requirement_status_permanently_locked;
-                                case 3 -> perk_requirement_status_fake_unlocked;
-                                default -> null;
-                            };
-                            if (!StringUtils.isEmpty(status)) lore.add(Utils.chat(status));
-                        } else if (l.contains("%warning_cost%")){
-                            if (unlockedStatus == 0 && !p.metResourceRequirements(target)) {
-                                for (ResourceExpense expense : p.getExpenses()) if (!expense.canPurchase(target)) lore.add(Utils.chat(expense.getInsufficientFundsMessage()));
-                            }
-                        } else if (l.contains("%status_unlockable%")){
-                            if (unlockedStatus == 0 && p.canUnlock(target) && !StringUtils.isEmpty(perk_requirement_status_unlockable)) lore.add(Utils.chat(perk_requirement_status_unlockable));
-                        } else if (l.contains("%cost%")){
-                            if (unlockedStatus == 0) for (ResourceExpense expense : p.getExpenses()) lore.add(Utils.chat(expense.getCostMessage()));
-                        } else {
-                            lore.add(Utils.chat(PlaceholderRegistry.parsePapi(PlaceholderRegistry.parse(l.replace("%level_required%", String.valueOf(p.getLevelRequirement())).replace("%skill%", p.getSkill().getDisplayName()), target), target)));
-                        }
-                    });
+                    for (String l : TranslationManager.getListTranslation("skilltree_perk_format")) {
+                        parseLore(p, l, lore, unlockedStatus);
+                    }
                     icon.lore(lore);
                     icon.flag(ItemFlag.HIDE_ATTRIBUTES, ConventionUtils.getHidePotionEffectsFlag(), ItemFlag.HIDE_DYE, ItemFlag.HIDE_ENCHANTS);
                     icon.wipeAttributes();
@@ -391,6 +355,145 @@ public class SkillTreeMenu extends Menu {
             }
         }
         return skillTree;
+    }
+
+    /**
+     * if (l.contains("%description%")) {
+     *     String description = p.getDescription();
+     *     for (PerkReward reward : p.getRewards())
+     *         description = description.replace("{" + reward.getName() + "}", reward.rewardPlaceholder());
+     *     lore.addAll(Utils.chat(StringUtils.separateStringIntoLines(description, 40)));
+     * } else if (UnlockConditionRegistry.getValuePlaceholders().stream().anyMatch(con -> l.contains(String.format("%%%s%%", con)))) { // if lore contains a value placeholder
+     *     UnlockCondition condition = p.getConditions().stream().filter(con -> l.contains(String.format("%%%s%%", con.getValuePlaceholder()))).findAny().orElse(null);
+     *     if (unlockedStatus == 0 && condition != null && condition.getConditionMessages() != null && !condition.getConditionMessages().isEmpty())
+     *         lore.addAll(Utils.chat(condition.getConditionMessages()));
+     * } else if (UnlockConditionRegistry.getFailurePlaceholders().stream().anyMatch(con -> l.contains(String.format("%%%s%%", con)))) { // if lore contains a failure placeholder
+     *     UnlockCondition condition = p.getConditions().stream().filter(con -> l.contains(String.format("%%%s%%", con.getFailurePlaceholder()))).findAny().orElse(null);
+     *     if (unlockedStatus == 0 && !p.metConditionRequirements(target, false) && condition != null && !StringUtils.isEmpty(condition.getFailedConditionMessage()))
+     *         lore.add(Utils.chat(condition.getFailedConditionMessage()));
+     * } else if (ResourceExpenseRegistry.getExpenses().values().stream().anyMatch(con -> l.contains(con.getCostPlaceholder()))) { // if lore contains a cost placeholder
+     *     ResourceExpense condition = p.getExpenses().stream().filter(con -> l.contains(con.getCostPlaceholder())).findAny().orElse(null);
+     *     if (unlockedStatus == 0 && condition != null && !StringUtils.isEmpty(condition.getCostMessage()))
+     *         lore.addAll(StringUtils.separateStringIntoLines(Utils.chat(condition.getCostMessage()), 40));
+     * } else if (ResourceExpenseRegistry.getExpenses().values().stream().anyMatch(con -> l.contains(con.getInsufficientCostPlaceholder()))) { // if lore contains a cost placeholder
+     *     ResourceExpense condition = p.getExpenses().stream().filter(con -> l.contains(con.getInsufficientCostPlaceholder())).findAny().orElse(null);
+     *     if (unlockedStatus == 0 && condition != null && !condition.canPurchase(target) && !StringUtils.isEmpty(condition.getInsufficientFundsMessage()))
+     *         lore.add(Utils.chat(condition.getInsufficientFundsMessage()));
+     * } else if (l.contains("%warning_levels%")) {
+     *     if (unlockedStatus == 0 && !p.metLevelRequirement(target) && !StringUtils.isEmpty(perk_requirement_warning_levels))
+     *         lore.add(Utils.chat(perk_requirement_warning_levels));
+     * } else if (l.contains("%status_unlocked%")) {
+     *     String status = switch (unlockedStatus) {
+     *         case 1 -> perk_requirement_status_unlocked;
+     *         case 2 -> perk_requirement_status_permanently_locked;
+     *         case 3 -> perk_requirement_status_fake_unlocked;
+     *         default -> null;
+     *     };
+     *     if (!StringUtils.isEmpty(status)) lore.add(Utils.chat(status));
+     * } else if (l.contains("%warning_cost%")) {
+     *     if (unlockedStatus == 0 && !p.metResourceRequirements(target)) {
+     *         for (ResourceExpense expense : p.getExpenses())
+     *             if (!expense.canPurchase(target))
+     *                 lore.add(Utils.chat(expense.getInsufficientFundsMessage()));
+     *     }
+     * } else if (l.contains("%status_unlockable%")) {
+     *     if (unlockedStatus == 0 && p.canUnlock(target) && !StringUtils.isEmpty(perk_requirement_status_unlockable))
+     *         lore.add(Utils.chat(perk_requirement_status_unlockable));
+     * } else if (l.contains("%cost%")) {
+     *     if (unlockedStatus == 0) for (ResourceExpense expense : p.getExpenses())
+     *         lore.add(Utils.chat(expense.getCostMessage()));
+     * } else {
+     *     lore.add(Utils.chat(PlaceholderRegistry.parsePapi(PlaceholderRegistry.parse(l.replace("%level_required%", String.valueOf(p.getLevelRequirement())).replace("%skill%", p.getSkill().getDisplayName()), target), target)));
+     * }
+     */
+    private void parseLore(Perk p, String l, List<String> lore, int unlockedStatus) {
+        switch (l.toLowerCase()) {
+            case "%description%" -> {
+                String description = p.getDescription();
+                for (PerkReward reward : p.getRewards())
+                    description = description.replace("{" + reward.getName() + "}", reward.rewardPlaceholder());
+                lore.addAll(Utils.chat(StringUtils.separateStringIntoLines(description, 40)));
+            }
+            case "%warning_levels%" -> {
+                if (unlockedStatus == 0 && !p.metLevelRequirement(target) && !StringUtils.isEmpty(perk_requirement_warning_levels))
+                    lore.add(Utils.chat(perk_requirement_warning_levels));
+            }
+            case "%status_unlocked%" -> {
+                String status = switch (unlockedStatus) {
+                    case 1 -> perk_requirement_status_unlocked;
+                    case 2 -> perk_requirement_status_permanently_locked;
+                    case 3 -> perk_requirement_status_fake_unlocked;
+                    default -> null;
+                };
+                if (!StringUtils.isEmpty(status)) lore.add(Utils.chat(status));
+            }
+            case "%status_unlockable%" -> {
+                if (unlockedStatus == 0 && p.canUnlock(target) && !StringUtils.isEmpty(perk_requirement_status_unlockable))
+                    lore.add(Utils.chat(perk_requirement_status_unlockable));
+            }
+            case "%cost%" -> {
+                if (unlockedStatus == 0) for (ResourceExpense expense : p.getExpenses())
+                    lore.add(Utils.chat(expense.getCostMessage()));
+            }
+            default -> lore.add(Utils.chat(PlaceholderRegistry.parsePapi(PlaceholderRegistry.parse(l.replace("%level_required%", String.valueOf(p.getLevelRequirement())).replace("%skill%", p.getSkill().getDisplayName()), target), target)));
+        }
+
+        for (String valuePlaceholder : UnlockConditionRegistry.getValuePlaceholders()) {
+            if (l.equalsIgnoreCase(String.format("%%%s%%", valuePlaceholder))) {
+                UnlockCondition condition = null;
+                for (UnlockCondition con : p.getConditions()) {
+                    if (l.contains(String.format("%%%s%%", con.getValuePlaceholder()))) {
+                        condition = con;
+                        break;
+                    }
+                }
+
+                if (unlockedStatus == 0 && condition != null && condition.getConditionMessages() != null && !condition.getConditionMessages().isEmpty()) {
+                    lore.addAll(Utils.chat(condition.getConditionMessages()));
+                    return;
+                }
+            }
+        }
+
+        for (String failurePlaceholder : UnlockConditionRegistry.getFailurePlaceholders()) {
+            if (l.equalsIgnoreCase(String.format("%%%s%%", failurePlaceholder))) {
+                UnlockCondition condition = null;
+                for (UnlockCondition con : p.getConditions()) {
+                    if (l.contains(String.format("%%%s%%", con.getFailurePlaceholder()))) {
+                        condition = con;
+                        break;
+                    }
+                }
+
+                if (unlockedStatus == 0 && !p.metConditionRequirements(target, false) && condition != null && !StringUtils.isEmpty(condition.getFailedConditionMessage())) {
+                    lore.add(Utils.chat(condition.getFailedConditionMessage()));
+                    return;
+                }
+            }
+        }
+
+        List<String> list = new ArrayList<>();
+        for (ResourceExpense resourceExpense : ResourceExpenseRegistry.getExpenses().values()) {
+            String placeholder = resourceExpense.getCostPlaceholder();
+            list.add(placeholder);
+        }
+
+        for (String costPlaceholder : list) {
+            if (l.equalsIgnoreCase(costPlaceholder)) {
+                ResourceExpense condition = null;
+                for (ResourceExpense con : p.getExpenses()) {
+                    if (l.contains(con.getCostPlaceholder())) {
+                        condition = con;
+                        break;
+                    }
+                }
+
+                if (unlockedStatus == 0 && condition != null && !StringUtils.isEmpty(condition.getCostMessage())) {
+                    lore.addAll(StringUtils.separateStringIntoLines(Utils.chat(condition.getCostMessage()), 40));
+                    return;
+                }
+            }
+        }
     }
 
     // If everything goes right, this should return a 9x5 section 2D array of itemstacks given a center point x and y of
