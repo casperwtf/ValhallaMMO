@@ -20,7 +20,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ItemAttributesRegistry {
     private static final NamespacedKey DEFAULT_STATS = new NamespacedKey(ValhallaMMO.getInstance(), "default_stats");
@@ -347,7 +346,11 @@ public class ItemAttributesRegistry {
      * @return the map of vanilla stats registered to the material, or an empty map if none.
      */
     public static Map<String, AttributeWrapper> getVanillaStats(Material m){
-        return new HashMap<>(vanillaAttributes.getOrDefault(m, new HashMap<>()));
+        Map<String, AttributeWrapper> stats = vanillaAttributes.get(m);
+        if (stats != null) {
+            return new HashMap<>(stats);
+        }
+        return new HashMap<>();
     }
 
     /**

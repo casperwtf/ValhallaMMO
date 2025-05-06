@@ -288,24 +288,40 @@ public abstract class Profile {
     public Profile merge(Profile profile, Player owner){
         Profile merged = getBlankProfile(owner);
         for (String s : allStatNames){
-            if (ints.containsKey(s)) {
-                StatProperties mode = this.ints.get(s).getProperties();
-                merged.ints.get(s).value = (int) mergeNumbers(mode, this.ints.get(s).value, profile.ints.get(s).value, profile.ints.get(s).def);
-            } else if (doubles.containsKey(s)) {
-                StatProperties mode = this.doubles.get(s).getProperties();
-                merged.doubles.get(s).value = mergeNumbers(mode, this.doubles.get(s).value, profile.doubles.get(s).value, profile.doubles.get(s).def);
-            } else if (floats.containsKey(s)) {
-                StatProperties mode = this.floats.get(s).getProperties();
-                merged.floats.get(s).value = (float) mergeNumbers(mode, this.floats.get(s).value, profile.floats.get(s).value, profile.floats.get(s).def);
-            } else if (stringSets.containsKey(s)) {
-                Collection<String> sets = new HashSet<>(profile.stringSets.get(s));
-                sets.addAll(this.stringSets.get(s));
-                merged.stringSets.put(s, sets);
-            } else if (booleans.containsKey(s)) {
-                merged.booleans.get(s).setValue(booleans.get(s).getProperties().shouldPrioritizeTrue() ?
-                        (profile.booleans.get(s).getValue() || this.booleans.get(s).getValue()) : // if either are true, put true
-                        (!(!profile.booleans.get(s).getValue() || !this.booleans.get(s).getValue()))); // if either are false, put false
-            } else ValhallaMMO.logWarning("Stat " + s + " in " + this.getClass().getSimpleName() + " was not associated to datatype");
+            NumberHolder<Integer> intStat = ints.get(s);
+            if (intStat != null) {
+                NumberHolder<Integer> other = profile.ints.get(s);
+                merged.ints.get(s).value = (int) mergeNumbers(intStat.properties, intStat.value, other.value, other.def);
+                continue;
+            }
+            NumberHolder<Double> doubleStat = doubles.get(s);
+            if (doubleStat != null) {
+                NumberHolder<Double> other = profile.doubles.get(s);
+                merged.doubles.get(s).value = mergeNumbers(doubleStat.properties, doubleStat.value, other.value, other.def);
+                continue;
+            }
+            NumberHolder<Float> floatStat = floats.get(s);
+            if (floatStat != null) {
+                NumberHolder<Float> other = profile.floats.get(s);
+                merged.floats.get(s).value = (float) mergeNumbers(floatStat.properties, floatStat.value, other.value, other.def);
+                continue;
+            }
+            Collection<String> strings = stringSets.get(s);
+            if (strings != null) {
+                Collection<String> allStrings = new HashSet<>(profile.stringSets.get(s));
+                allStrings.addAll(strings);
+                merged.stringSets.put(s, allStrings);
+                continue;
+            }
+            BooleanHolder booleanStat = booleans.get(s);
+            if (booleanStat != null) {
+                BooleanHolder other = profile.booleans.get(s);
+                merged.booleans.get(s).setValue(booleanStat.getProperties().shouldPrioritizeTrue() ?
+                        (other.getValue() || booleanStat.getValue()) : // if either are true, put true
+                        (!(!other.getValue() || !booleanStat.getValue()))); // if either are false, put false
+            } else {
+                ValhallaMMO.logWarning("Stat " + s + " in " + this.getClass().getSimpleName() + " was not associated to datatype");
+            }
         }
         return merged;
     }

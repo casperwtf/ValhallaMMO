@@ -48,10 +48,9 @@ public class EntityProperties {
 
     public void addCombinedEnchantments(ItemBuilder builder){
         if (builder == null) return;
-        for (Enchantment e : builder.getItem().getEnchantments().keySet()){
-            int existingLevel = combinedEnchantments.getOrDefault(e, 0);
-            existingLevel += builder.getItem().getEnchantmentLevel(e);
-            combinedEnchantments.put(e, existingLevel);
+        for (Map.Entry<Enchantment, Integer> entry : builder.getItem().getEnchantments().entrySet()){
+            int existingLevel = combinedEnchantments.getOrDefault(entry.getKey(), 0);
+            combinedEnchantments.put(entry.getKey(), existingLevel + entry.getValue());
         }
     }
 
@@ -87,11 +86,7 @@ public class EntityProperties {
      * @return a list containing all of the entity's equipment
      */
     public List<ItemBuilder> getIterable(boolean includeHands, Boolean hand){
-        List<ItemBuilder> iterable = new ArrayList<>();
-        if (helmet != null) iterable.add(helmet);
-        if (chestplate != null) iterable.add(chestplate);
-        if (leggings != null) iterable.add(leggings);
-        if (boots != null) iterable.add(boots);
+        List<ItemBuilder> iterable = getArmor();
         if (!miscEquipmentAttributes.isEmpty()) iterable.addAll(miscEquipment);
         if (includeHands){
             if ((hand == null || hand) && mainHand != null) iterable.add(mainHand);
@@ -118,6 +113,15 @@ public class EntityProperties {
             if ((hand == null || !hand)  && offHandAttributes != null && !offHandAttributes.isEmpty()) iterable.add(offHandAttributes);
         }
         return iterable;
+    }
+
+    public List<ItemBuilder> getArmor(){
+        List<ItemBuilder> armor = new ArrayList<>();
+        if (helmet != null) armor.add(helmet);
+        if (chestplate != null) armor.add(chestplate);
+        if (leggings != null) armor.add(leggings);
+        if (boots != null) armor.add(boots);
+        return armor;
     }
 
     public List<ItemBuilder> getHands(){

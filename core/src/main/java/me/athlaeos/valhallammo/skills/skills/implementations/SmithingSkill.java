@@ -95,7 +95,7 @@ public class SmithingSkill extends Skill implements Listener {
     }
 
     public double getExperienceMultiplierFromDamage(Player crafter, Material crafted, boolean consumeStacks){
-        boolean isArmor = EquipmentClass.isArmor(EquipmentClass.getMatchingClass(crafted));
+        boolean isArmor = EquipmentClass.getMatchingClass(crafted).isArmor();
         int stacks = getStacks(crafter, crafted);
         double multiplier = 1 + (isArmor ?
                 Math.min(stacks, durabilityArmorEXPBonusMaxStacks) * durabilityArmorEXPBonusPerStack :
