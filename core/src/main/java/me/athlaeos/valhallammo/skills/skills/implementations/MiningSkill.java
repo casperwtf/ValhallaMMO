@@ -249,10 +249,10 @@ public class MiningSkill extends Skill implements Listener {
 
     private final Collection<UUID> recursionPrevention = new HashSet<>();
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent e){
         if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || recursionPrevention.contains(e.getEntity().getUniqueId()) ||
-                e.isCancelled() || !(e.getEntity() instanceof TNTPrimed tnt) || tnt.getSource() == null) return;
+                !(e.getEntity() instanceof TNTPrimed tnt) || tnt.getSource() == null) return;
         Player responsible = null;
         if (tnt.getSource() instanceof Player p && p.isOnline()) responsible = p;
         else if (tnt.getSource() instanceof AbstractArrow a && a.getShooter() instanceof Player p && p.isOnline()) responsible = p;
@@ -306,9 +306,9 @@ public class MiningSkill extends Skill implements Listener {
         addEXP(responsible, exp * blastingExpMultiplier, false, PlayerSkillExperienceGainEvent.ExperienceGainReason.SKILL_ACTION);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onTNTDamage(EntityDamageByEntityEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled() || !(e.getDamager() instanceof TNTPrimed tnt) ||
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || !(e.getDamager() instanceof TNTPrimed tnt) ||
                 !(e.getEntity() instanceof Item || e.getEntity() instanceof Player)) return;
         if (WorldGuardHook.inDisabledRegion(e.getEntity().getLocation(), WorldGuardHook.VMMO_SKILL_MINING)) return;
         if (e.getEntity() instanceof Player p) {

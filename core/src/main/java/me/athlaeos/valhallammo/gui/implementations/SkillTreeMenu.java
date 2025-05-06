@@ -8,6 +8,7 @@ import me.athlaeos.valhallammo.item.ItemAttributesRegistry;
 import me.athlaeos.valhallammo.item.ItemBuilder;
 import me.athlaeos.valhallammo.localization.TranslationManager;
 import me.athlaeos.valhallammo.placeholder.PlaceholderRegistry;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileCache;
 import me.athlaeos.valhallammo.skills.skills.Perk;
 import me.athlaeos.valhallammo.skills.skills.PerkConnectionIcon;
 import me.athlaeos.valhallammo.skills.perk_rewards.PerkReward;
@@ -250,7 +251,7 @@ public class SkillTreeMenu extends Menu {
                 if (s == null) {
                     continue;
                 }
-                PowerProfile acc = ProfileRegistry.getMergedProfile(target, PowerProfile.class);
+                PowerProfile acc = ProfileCache.getOrCache(target, PowerProfile.class);
                 meta.setDisplayName(Utils.chat(s.getDisplayName() + (acc.getNewGamePlus() > 0 ?
                         TranslationManager.getTranslation("prestige_level_format")
                                 .replace("%prestige_roman%", StringUtils.toRoman(acc.getNewGamePlus())
@@ -367,27 +368,27 @@ public class SkillTreeMenu extends Menu {
                             continue;
                         }
 
-                        for (UnlockCondition condition : p.getConditions()) {
+                        for (UnlockCondition condition : UnlockConditionRegistry.getConditions()) {
                             if (l.contains("%" + condition.getValuePlaceholder() + "%")) {
-                                if (unlockedStatus == 0 && condition.getConditionMessages() != null && !condition.getConditionMessages().isEmpty())
+                                if (unlockedStatus == 0 && p.getConditions().contains(condition) && condition.getConditionMessages() != null && !condition.getConditionMessages().isEmpty())
                                     lore.addAll(Utils.chat(condition.getConditionMessages()));
                                 continue upper;
                             }
                             if (l.contains("%" + condition.getFailurePlaceholder() + "%")) {
-                                if (unlockedStatus == 0 && !p.metConditionRequirements(target, false) && !StringUtils.isEmpty(condition.getFailedConditionMessage()))
+                                if (unlockedStatus == 0 && p.getConditions().contains(condition) && !p.metConditionRequirements(target, false) && !StringUtils.isEmpty(condition.getFailedConditionMessage()))
                                     lore.add(Utils.chat(condition.getFailedConditionMessage()));
                                 continue upper;
                             }
                         }
 
-                        for (ResourceExpense expense : p.getExpenses()) {
+                        for (ResourceExpense expense : ResourceExpenseRegistry.getExpenses().values()) {
                             if (l.contains(expense.getCostMessage())) {
-                                if (unlockedStatus == 0 && !StringUtils.isEmpty(expense.getCostMessage()))
+                                if (unlockedStatus == 0 && p.getExpenses().contains(expense) && !StringUtils.isEmpty(expense.getCostMessage()))
                                     lore.addAll(StringUtils.separateStringIntoLines(Utils.chat(expense.getCostMessage()), 40));
                                 continue upper;
                             }
                             if (l.contains(expense.getInsufficientCostPlaceholder())) {
-                                if (unlockedStatus == 0 && !expense.canPurchase(target) && !StringUtils.isEmpty(expense.getInsufficientFundsMessage()))
+                                if (unlockedStatus == 0 && p.getExpenses().contains(expense) && !expense.canPurchase(target) && !StringUtils.isEmpty(expense.getInsufficientFundsMessage()))
                                     lore.add(Utils.chat(expense.getInsufficientFundsMessage()));
                                 continue upper;
                             }
