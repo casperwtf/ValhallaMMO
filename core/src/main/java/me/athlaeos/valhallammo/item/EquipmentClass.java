@@ -100,6 +100,6 @@ public enum EquipmentClass {
     }
 
     public static boolean isArmor(EquipmentClass equipmentClass) {
-        return equipmentClass.isArmor();
+        return equipmentClass != null && equipmentClass.isArmor();
     }
 }
