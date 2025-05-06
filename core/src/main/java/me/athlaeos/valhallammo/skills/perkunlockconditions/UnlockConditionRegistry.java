@@ -7,7 +7,9 @@ import me.athlaeos.valhallammo.skills.perkunlockconditions.implementations.Versi
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class UnlockConditionRegistry {
@@ -30,6 +32,10 @@ public class UnlockConditionRegistry {
         return expense.createInstance();
     }
 
+    public static Collection<UnlockCondition> getConditions() {
+        return new HashSet<>(conditions.values());
+    }
+
     /**
      * Retrieves a collection of all the value placeholders of all registered unlock conditions. These placeholders
      * also happen to be the keys under which they are registered.
@@ -37,7 +43,7 @@ public class UnlockConditionRegistry {
      * @return a collection of value placeholders
      */
     public static Collection<String> getValuePlaceholders() {
-        return conditions.keySet();
+        return new HashSet<>(conditions.keySet());
     }
 
     /**
@@ -47,6 +53,11 @@ public class UnlockConditionRegistry {
      * @return a collection of failure placeholders
      */
     public static Collection<String> getFailurePlaceholders() {
-        return conditions.values().stream().map(UnlockCondition::getFailurePlaceholder).collect(Collectors.toSet());
+        Set<String> placeholders = new HashSet<>();
+        for (UnlockCondition unlockCondition : conditions.values()) {
+            String failurePlaceholder = unlockCondition.getFailurePlaceholder();
+            placeholders.add(failurePlaceholder);
+        }
+        return placeholders;
     }
 }
