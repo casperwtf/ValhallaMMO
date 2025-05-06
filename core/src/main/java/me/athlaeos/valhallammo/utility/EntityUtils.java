@@ -229,13 +229,19 @@ public class EntityUtils {
     }
 
     public static List<Player> getNearbyPlayers(Location from, double radius){
+        return getNearbyPlayers(from, radius, true);
+    }
+
+    public static List<Player> getNearbyPlayers(Location from, double radius, boolean sorted){
         double squared = radius * radius;
         List<Player> nearby = new ArrayList<>();
         if (from.getWorld() == null) return nearby;
         for (Player p : from.getWorld().getPlayers()){
             if (from.distanceSquared(p.getLocation()) <= squared) nearby.add(p);
         }
-        nearby.sort(Comparator.comparingDouble(p -> p.getLocation().distanceSquared(from)));
+        if (sorted) {
+            nearby.sort(Comparator.comparingDouble(p -> p.getLocation().distanceSquared(from)));
+        }
         return nearby;
     }
 

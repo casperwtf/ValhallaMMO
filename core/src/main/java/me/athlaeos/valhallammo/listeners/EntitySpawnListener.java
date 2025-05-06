@@ -71,10 +71,10 @@ public class EntitySpawnListener implements Listener {
         e.getEntity().setMetadata("valhallammo_spawnreason", new FixedMetadataValue(ValhallaMMO.getInstance(), e.getSpawnReason().toString()));
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLevelledEntitySpawn(CreatureSpawnEvent e){
         if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || !viableSpawnReasons.contains(e.getSpawnReason().toString()) ||
-                e.isCancelled() || EntityClassification.matchesClassification(e.getEntityType(), EntityClassification.UNALIVE)) return;
+                EntityClassification.matchesClassification(e.getEntityType(), EntityClassification.UNALIVE)) return;
         AttributeInstance maxHealth = e.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH);
         if (e.getEntity().getCustomName() != null || (maxHealth != null && maxHealth.getBaseValue() != maxHealth.getValue())) return;
 
