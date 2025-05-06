@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.command.CommandSender;
@@ -25,6 +26,7 @@ import java.util.regex.Pattern;
 import static me.athlaeos.valhallammo.hooks.MiniMessageHook.convertMiniMessage;
 
 public class Utils {
+    public static final Particle DUST = Particle.valueOf(oldOrNew("REDSTONE", "DUST"));
 
     private static final Random random = new Random();
 

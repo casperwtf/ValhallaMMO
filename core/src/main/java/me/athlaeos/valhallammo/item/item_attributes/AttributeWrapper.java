@@ -4,6 +4,7 @@ import me.athlaeos.valhallammo.crafting.dynamicitemmodifiers.ModifierRegistry;
 import me.athlaeos.valhallammo.crafting.dynamicitemmodifiers.implementations.item_stats.DefaultAttributeAdd;
 import me.athlaeos.valhallammo.crafting.dynamicitemmodifiers.implementations.item_stats.DefaultAttributeRemove;
 import me.athlaeos.valhallammo.crafting.dynamicitemmodifiers.implementations.item_stats.DefaultAttributeScale;
+import me.athlaeos.valhallammo.item.ItemBuilder;
 import me.athlaeos.valhallammo.localization.TranslationManager;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import org.bukkit.Material;
@@ -93,7 +94,13 @@ public abstract class AttributeWrapper {
     public boolean isCompatible(ItemStack i){
         return true;
     }
+    public void onApply(ItemBuilder i){
+        onApply(i.getMeta());
+    }
     public void onApply(ItemMeta i){}
+    public void onRemove(ItemBuilder i){
+        onRemove(i.getMeta());
+    }
     public void onRemove(ItemMeta i) {}
 
     public Double getMin() { return min; }

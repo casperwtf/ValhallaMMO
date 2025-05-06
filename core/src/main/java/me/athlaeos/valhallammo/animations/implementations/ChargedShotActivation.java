@@ -25,7 +25,5 @@ public class ChargedShotActivation extends Animation {
     @Override
     public void animate(LivingEntity entity, Location location, Vector direction, int tick) {
         if (prefireSound != null) entity.getWorld().playSound(location, prefireSound, prefireVolume, prefirePitch);
-
-
     }
 }

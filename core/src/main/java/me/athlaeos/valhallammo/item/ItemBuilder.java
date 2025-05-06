@@ -21,6 +21,9 @@ import java.util.*;
 public class ItemBuilder {
     private ItemStack item;
     private ItemMeta meta;
+    private String name;
+    private List<String> lore;
+    private boolean translate = true;
     private final Collection<MiningSpeed.EmbeddedTool> embeddedTools;
 
     public ItemBuilder copy(){
@@ -53,7 +56,7 @@ public class ItemBuilder {
     }
 
     public ItemBuilder translate(){
-        TranslationManager.translateItemMeta(meta);
+        this.translate = true;
         return this;
     }
 
@@ -109,13 +112,17 @@ public class ItemBuilder {
     }
 
     public ItemBuilder name(String name){
-        meta.setDisplayName(Utils.chat(name));
+        this.name = name;
         return this;
+    }
+
+    public String getName(){
+        return name;
     }
 
     public ItemBuilder lore(List<String> lore){
         if (lore == null) return this;
-        meta.setLore(Utils.chat(lore));
+        this.lore = lore;
         return this;
     }
 
@@ -126,23 +133,24 @@ public class ItemBuilder {
 
     public ItemBuilder appendLore(List<String> lore){
         if (lore == null) return this;
-        List<String> l = meta.getLore() == null ? new ArrayList<>() : meta.getLore();
-        l.addAll(Utils.chat(lore));
-        meta.setLore(l);
+        List<String> l = this.lore == null ? new ArrayList<>() : this.lore;
+        l.addAll(lore);
+        this.lore = l;
         return this;
     }
 
     public ItemBuilder prependLore(List<String> lore){
         if (lore == null) return this;
-        List<String> l = meta.getLore() == null ? new ArrayList<>() : meta.getLore();
-        lore = new ArrayList<>(Utils.chat(lore));
-        lore.addAll(l);
-        meta.setLore(lore);
+        lore = new ArrayList<>(lore);
+        if (this.lore != null) {
+            lore.addAll(this.lore);
+        }
+        this.lore = lore;
         return this;
     }
 
     public ItemBuilder placeholderLore(String placeholder, List<String> replaceWith){
-        return lore(ItemUtils.setListPlaceholder(meta.hasLore() && meta.getLore() != null ? meta.getLore() : new ArrayList<>(), placeholder, replaceWith));
+        return lore(ItemUtils.setListPlaceholder(lore != null ? lore : new ArrayList<>(), placeholder, replaceWith));
     }
 
     public ItemBuilder appendLore(String... lore){
@@ -152,7 +160,11 @@ public class ItemBuilder {
 
     public ItemBuilder prependLore(String... lore){
         if (lore == null) return this;
-        return prependLore(new ArrayList<>(List.of(lore)));
+        return prependLore(Arrays.asList(lore));
+    }
+
+    public List<String> getLore(){
+        return lore;
     }
 
     public ItemBuilder amount(int amount){
@@ -204,6 +216,15 @@ public class ItemBuilder {
 
     public ItemStack get(){
         if (ItemUtils.isEmpty(this.item)) return null;
+        if (this.name != null) {
+            meta.setDisplayName(Utils.chat(this.name));
+        }
+        if (this.lore != null) {
+            meta.setLore(Utils.chat(this.lore));
+        }
+        if (translate) {
+            TranslationManager.translateItemMeta(meta);
+        }
         ItemUtils.setMetaNoClone(this.item, meta);
         ItemUtils.storeType(meta, this.item.getType());
         return item;
