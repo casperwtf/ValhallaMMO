@@ -292,7 +292,11 @@ public class Utils {
 
     public static List<String> chat(List<String> messages){
         if (messages == null) return new ArrayList<>();
-        return messages.stream().map(Utils::chat).toList();
+        List<String> chat = new ArrayList<>();
+        for (String message : messages) {
+            chat.add(chat(message));
+        }
+        return chat;
     }
 
     private static boolean miniMessageSupported;

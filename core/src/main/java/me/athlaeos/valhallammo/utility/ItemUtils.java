@@ -353,8 +353,13 @@ public class ItemUtils {
         if (isEmpty(i)) return null;
         ItemMeta meta = i.getItemMeta();
         if (meta == null) return null;
-        meta.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.STRING, i.getType().toString());
+        storeType(meta, i.getType());
         return meta;
+    }
+
+    public static void storeType(ItemMeta meta, Material material) {
+        if (meta == null) return;
+        meta.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.STRING, material.toString());
     }
 
     /**
@@ -364,6 +369,11 @@ public class ItemUtils {
      */
     public static void setItemMeta(ItemStack i, ItemMeta meta){
         meta = meta.clone();
+        meta.getPersistentDataContainer().remove(TYPE_KEY);
+        i.setItemMeta(meta);
+    }
+
+    public static void setMetaNoClone(ItemStack i, ItemMeta meta) {
         meta.getPersistentDataContainer().remove(TYPE_KEY);
         i.setItemMeta(meta);
     }
@@ -614,7 +624,7 @@ public class ItemUtils {
                 }
             }
             PlayerItemDamageEvent event = new PlayerItemDamageEvent(who, item, damage);
-            ValhallaMMO.getInstance().getServer().getPluginManager().callEvent(event);
+            Bukkit.getPluginManager().callEvent(event);
             if (!event.isCancelled()){
                 if (!CustomDurabilityManager.hasCustomDurability(meta)){
                     Damageable damageable = (Damageable) meta;
@@ -623,7 +633,7 @@ public class ItemUtils {
                         who.playEffect(breakEffect);
                         return true;
                     } else {
-                        setItemMeta(item, damageable);
+                        setMetaNoClone(item, damageable);
                     }
                 } else {
                     if (CustomDurabilityManager.getDurability(meta, false) <= 0){

@@ -47,7 +47,7 @@ public class ItemBuilder {
 
     public ItemBuilder type(Material type){
         item.setType(type);
-        ItemUtils.setItemMeta(item, meta);
+        ItemUtils.setMetaNoClone(item, meta);
         meta = ItemUtils.getItemMeta(item);
         return this;
     }
@@ -204,7 +204,8 @@ public class ItemBuilder {
 
     public ItemStack get(){
         if (ItemUtils.isEmpty(this.item)) return null;
-        ItemUtils.setItemMeta(this.item, meta);
+        ItemUtils.setMetaNoClone(this.item, meta);
+        ItemUtils.storeType(meta, this.item.getType());
         return item;
     }
 
