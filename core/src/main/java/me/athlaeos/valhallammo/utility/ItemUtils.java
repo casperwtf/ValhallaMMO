@@ -306,8 +306,14 @@ public class ItemUtils {
         return contents;
     }
 
+    public static void replaceOrAddLore(ItemBuilder builder, String find, String replacement){
+        if (builder == null) return;
+        List<String> lore = builder.getLore() == null ? new ArrayList<>() : builder.getLore();
+        replaceOrAddLore(lore, find, replacement);
+        builder.lore(lore);
+    }
+
     public static void replaceOrAddLore(ItemMeta meta, String find, String replacement){
-        find = ChatColor.stripColor(Utils.chat(find));
         if (meta == null) return;
         List<String> lore = meta.getLore() == null ? new ArrayList<>() : meta.getLore();
         replaceOrAddLore(lore, find, replacement);
@@ -315,8 +321,8 @@ public class ItemUtils {
     }
 
     public static void replaceOrAddLore(List<String> original, String find, String replacement){
-        find = ChatColor.stripColor(Utils.chat(find));
         if (original == null) return;
+        find = ChatColor.stripColor(Utils.chat(find));
         int index = -1;
         for (String l : original){
             if (l.contains(find)){
@@ -431,10 +437,10 @@ public class ItemUtils {
         if (meta == null) return "null";
         Material base = getStoredType(meta);
         if (base == null) return "null";
-        if (meta.hasDisplayName()) name = Utils.chat(meta.getDisplayName());
+        if (meta.hasDisplayName()) name = meta.getDisplayName();
         else if (TranslationManager.getMaterialTranslations().getMaterialTranslations().containsKey(base.toString())) name = Utils.chat(TranslationManager.getMaterialTranslation(base));
-        else name = me.athlaeos.valhallammo.utility.StringUtils.toPascalCase("&r" + base.toString().replace("_", " "));
-        return Utils.chat(name);
+        else name = Utils.chat(me.athlaeos.valhallammo.utility.StringUtils.toPascalCase("&r" + base.toString().replace("_", " ")));
+        return name;
     }
 
     /**
@@ -471,16 +477,9 @@ public class ItemUtils {
 
     public static ItemMeta reSetItemText(ItemMeta meta){
         if (meta == null) return null;
-        if (meta.hasLore() && meta.getLore() != null){
-            List<String> newLore = new ArrayList<>();
-            for (String s : meta.getLore()){
-                newLore.add(Utils.chat(s));
-            }
-
-            meta.setLore(newLore);
+        if (meta.hasLore()){
+            meta.setLore(Utils.chat(meta.getLore()));
         }
-        if (meta.hasDisplayName()) meta.setDisplayName(meta.getDisplayName());
-
         return meta;
     }
 
@@ -587,6 +586,14 @@ public class ItemUtils {
         List<String> lore = meta.getLore();
         lore.removeIf(l -> l.contains(stripped));
         meta.setLore(lore);
+    }
+
+    public static void removeIfLoreContains(ItemBuilder i, String find) {
+        if (i == null || i.getLore() == null) return;
+        final String stripped = ChatColor.stripColor(Utils.chat(find));
+        List<String> lore = i.getLore();
+        lore.removeIf(l -> l.contains(stripped));
+        i.lore(lore);
     }
 
     /**
