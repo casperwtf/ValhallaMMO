@@ -382,7 +382,7 @@ public class SkillTreeMenu extends Menu {
                         }
 
                         for (ResourceExpense expense : ResourceExpenseRegistry.getExpenses().values()) {
-                            if (l.contains(expense.getCostMessage())) {
+                            if (l.contains(expense.getCostPlaceholder())) {
                                 if (unlockedStatus == 0 && p.getExpenses().contains(expense) && !StringUtils.isEmpty(expense.getCostMessage()))
                                     lore.addAll(StringUtils.separateStringIntoLines(Utils.chat(expense.getCostMessage()), 40));
                                 continue upper;
