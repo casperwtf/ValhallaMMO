@@ -3,7 +3,6 @@ package me.athlaeos.valhallammo.localization;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import me.athlaeos.valhallammo.ValhallaMMO;
-import me.athlaeos.valhallammo.utility.ItemUtils;
 import me.athlaeos.valhallammo.utility.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -28,10 +27,10 @@ public class TranslationManager {
      */
     public static String getTranslation(String key){
         if (pluginTranslations == null) return "";
-        if (!key.contains("<lang.")) ValhallaMMO.logWarning("No translated value mapped for " + key);
-        String translation = pluginTranslations.getStringTranslations().get(key);
+        Map<String, String> translations = pluginTranslations.getStringTranslations();
+        String translation = translations.get(key);
         if (translation == null) {
-            ValhallaMMO.logWarning("No translated value mapped for " + key);
+            if (!key.contains("<lang.") && !translations.containsKey(key)) ValhallaMMO.logWarning("No translated value mapped for key " + key);
             return translatePlaceholders(key);
         }
         return translatePlaceholders(translation);
@@ -181,7 +180,7 @@ public class TranslationManager {
             List<String> newLore = new ArrayList<>();
             if (lore != null) {
                 for (String line : lore) {
-                    if (line.contains("<land.")) {
+                    if (line.contains("<lang.")) {
                         for (String s : translateListPlaceholders(lore)){
                             newLore.add(Utils.chat(s));
                         }
