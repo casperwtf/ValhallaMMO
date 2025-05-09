@@ -312,6 +312,10 @@ public class ValhallaMMO extends JavaPlugin {
         }
 
         for (PluginHook hook : activeHooks.values()) hook.whenPresent();
+
+        if (ProfileRegistry.getPersistence() instanceof SQL sql) {
+            sql.startSaveQueue();
+        }
     }
 
     @Override

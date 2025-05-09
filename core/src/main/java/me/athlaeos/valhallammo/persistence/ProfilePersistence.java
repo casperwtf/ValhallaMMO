@@ -15,6 +15,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.params.SetParams;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 public abstract class ProfilePersistence {
@@ -167,9 +168,14 @@ public abstract class ProfilePersistence {
         try {
             this.pool = new JedisPool(ValhallaMMO.getPluginConfig().getString("redis.url", "redis://127.0.0.1:6379"));
         } catch(Exception ex) {
+            pool = null;
             ValhallaMMO.getInstance().getLogger().severe("Failed to initialize Jedis connection");
             ex.printStackTrace();
         }
+    }
+
+    public boolean redisConnected() {
+        return pool != null;
     }
 
     public boolean acquireLock(String editionKey, String lockValue) {

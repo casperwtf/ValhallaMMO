@@ -19,6 +19,7 @@ public class CommandManager implements TabExecutor {
 	public CommandManager() {
 		commands.put("help", new HelpCommand());
 		commands.put("exp", new EXPCommand());
+		commands.put("add_levels", new LevelCommand());
 		commands.put("recipes", new ManageRecipesCommand());
 		commands.put("profile", new ProfileStatsCommand());
 		commands.put("reset", new ResetProfilesCommand());

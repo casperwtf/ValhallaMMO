@@ -13,6 +13,7 @@ import me.athlaeos.valhallammo.playerstats.profiles.Profile;
 import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.skills.skills.SkillRegistry;
 import me.athlaeos.valhallammo.utility.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -20,11 +21,36 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 public class SQL extends ProfilePersistence implements Database, LeaderboardCompatible {
     private final Map<UUID, Map<Class<? extends Profile>, Profile>> persistentProfiles = new HashMap<>();
     private final Map<UUID, Map<Class<? extends Profile>, Profile>> skillProfiles = new HashMap<>();
+
+    protected final Queue<List<Profile>> saveQueue = new ConcurrentLinkedQueue<>();
+    protected boolean saveQueueStarted = false;
+
+    public void startSaveQueue() {
+        if (saveQueueStarted) return;
+        saveQueueStarted = true;
+        Bukkit.getScheduler().runTaskTimerAsynchronously(ValhallaMMO.getInstance(), () -> {
+            List<Profile> profiles = saveQueue.poll();
+            if (profiles == null || profiles.isEmpty()) return;
+            if (!acquireLock(profiles.get(0).getOwner().toString(), "SAVING")) {
+                saveQueue.add(profiles);
+                return;
+            }
+            try {
+                for (Profile profile : profiles) {
+                    if (profile.getOwner() == null) continue;
+                    insertOrUpdateProfile(profile.getOwner(), conn, profile);
+                }
+            } finally {
+                releaseLock(profiles.get(0).getOwner().toString(), "SAVING");
+            }
+        }, 0L, 1L);
+    }
 
     private Connection conn;
     @Override
@@ -261,18 +287,27 @@ public class SQL extends ProfilePersistence implements Database, LeaderboardComp
 
     @Override
     public void saveProfile(Player p) {
-        String lockKey = p.getUniqueId().toString();
-        acquireLock(lockKey, "SAVING");
-        if (persistentProfiles.containsKey(p.getUniqueId())){
+        UUID uuid = p.getUniqueId();
+        String lockKey = uuid.toString();
+        if (!acquireLock(lockKey, "SAVING")) {
+            // Queue saving
+            saveQueue.add(new ArrayList<>(persistentProfiles.getOrDefault(uuid, new HashMap<>()).values()));
+            return;
+        }
+
+        if (persistentProfiles.containsKey(uuid)){
             ValhallaMMO.getInstance().getServer().getScheduler().runTaskAsynchronously(ValhallaMMO.getInstance(), () -> {
-                if (!JoinLeaveListener.getLoadedProfiles().contains(p.getUniqueId())) {
+                try {
+                    if (!JoinLeaveListener.getLoadedProfiles().contains(uuid)) {
+                        releaseLock(lockKey, "SAVING");
+                        return;
+                    }
+                    for (Profile profile : persistentProfiles.getOrDefault(uuid, new HashMap<>()).values()) {
+                        insertOrUpdateProfile(uuid, conn, profile);
+                    }
+                } finally {
                     releaseLock(lockKey, "SAVING");
-                    return;
                 }
-                for (Profile profile : persistentProfiles.getOrDefault(p.getUniqueId(), new HashMap<>()).values()){
-                    insertOrUpdateProfile(p.getUniqueId(), conn, profile);
-                }
-                releaseLock(lockKey, "SAVING");
             });
         }
     }
