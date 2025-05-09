@@ -1,5 +1,6 @@
 package me.athlaeos.valhallammo.persistence;
 
+import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.skills.perkresourcecost.ResourceExpense;
 import me.athlaeos.valhallammo.skills.skills.Perk;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
@@ -9,11 +10,16 @@ import me.athlaeos.valhallammo.playerstats.profiles.implementations.PowerProfile
 import me.athlaeos.valhallammo.skills.skills.Skill;
 import me.athlaeos.valhallammo.skills.skills.SkillRegistry;
 import org.bukkit.entity.Player;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.params.SetParams;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class ProfilePersistence {
+    private static final long LOCK_TIMEOUT = 5000L;
+    private static final String EDITION_LOCK = "vmmo:player:lock";
 
     public abstract void setPersistentProfile(Player p, Profile profile, Class<? extends Profile> type);
     public abstract void setSkillProfile(Player p, Profile profile, Class<? extends Profile> type);
@@ -152,6 +158,42 @@ public abstract class ProfilePersistence {
         Collection<String> set = new HashSet<>(Arrays.asList(serializedStringSet.split("<>")));
         set.removeIf(String::isEmpty);
         return set;
+    }
+
+    // TEMP REDIS STUFF
+
+    private JedisPool pool;
+    {
+        try {
+            this.pool = new JedisPool(ValhallaMMO.getPluginConfig().getString("redis.url", "redis://127.0.0.1:6379"));
+        } catch(Exception ex) {
+            ValhallaMMO.getInstance().getLogger().severe("Failed to initialize Jedis connection");
+            ex.printStackTrace();
+        }
+    }
+
+    public boolean acquireLock(String editionKey, String lockValue) {
+        try(Jedis jedis = pool.getResource()) {
+            SetParams setParams = new SetParams().nx().px(LOCK_TIMEOUT);
+            String result = jedis.set(EDITION_LOCK + ":" + editionKey, lockValue, setParams);
+            return "OK".equals(result);
+        }
+    }
+
+    public boolean hasLock(String editionKey, String lockValue) {
+        try(Jedis jedis = pool.getResource()) {
+            String currentLockValue = jedis.get(EDITION_LOCK + ":" + editionKey);
+            return currentLockValue != null && currentLockValue.equals(lockValue);
+        }
+    }
+
+    public void releaseLock(String editionKey, String lockValue) {
+        try(Jedis jedis = pool.getResource()) {
+            String currentLockValue = jedis.get(EDITION_LOCK + ":" + editionKey);
+            if (currentLockValue.equals(lockValue)) {
+                jedis.del(EDITION_LOCK + ":" + editionKey);
+            }
+        }
     }
 }
 

@@ -4,9 +4,7 @@ import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.entities.EntityAttributeStats;
 import me.athlaeos.valhallammo.gui.PlayerMenuUtilManager;
 import me.athlaeos.valhallammo.playerstats.EntityCache;
-import me.athlaeos.valhallammo.playerstats.profiles.ProfileCache;
 import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
-import me.athlaeos.valhallammo.playerstats.profiles.implementations.PowerProfile;
 import me.athlaeos.valhallammo.potioneffects.PotionEffectRegistry;
 import me.athlaeos.valhallammo.skills.perk_rewards.implementations.FlightReward;
 import me.athlaeos.valhallammo.utility.GlobalEffect;
@@ -16,6 +14,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.persistence.PersistentDataType;
@@ -30,6 +29,16 @@ public class JoinLeaveListener implements Listener {
 
     public static Collection<UUID> getLoadedProfiles() {
         return loadedProfiles;
+    }
+
+    @EventHandler
+    public void prePlayerJoin(AsyncPlayerPreLoginEvent ev) {
+        if (ProfileRegistry.getPersistence().hasLock(ev.getUniqueId().toString(), "SAVING")) {
+            while (true) {
+                if (!ProfileRegistry.getPersistence().hasLock(ev.getUniqueId().toString(), "SAVING")) break;
+                Thread.sleep(50);
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -63,12 +72,7 @@ public class JoinLeaveListener implements Listener {
         e.getPlayer().getPersistentDataContainer().set(HEALTH, PersistentDataType.DOUBLE, e.getPlayer().getHealth());
         EntityAttributeStats.removeStats(e.getPlayer());
         PotionEffectRegistry.markAsUnaffected(e.getPlayer());
-
-//        if (loadedProfiles.contains(e.getPlayer().getUniqueId())) {
-//            ProfileRegistry.getPersistence().saveProfile(e.getPlayer());
-//            loadedProfiles.remove(e.getPlayer().getUniqueId());
-//        }
-
+        ProfileRegistry.getPersistence().saveProfile(e.getPlayer());
         FlightReward.setFlight(e.getPlayer(), false);
     }
 }

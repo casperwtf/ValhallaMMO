@@ -261,12 +261,18 @@ public class SQL extends ProfilePersistence implements Database, LeaderboardComp
 
     @Override
     public void saveProfile(Player p) {
+        String lockKey = p.getUniqueId().toString();
+        acquireLock(lockKey, "SAVING");
         if (persistentProfiles.containsKey(p.getUniqueId())){
             ValhallaMMO.getInstance().getServer().getScheduler().runTaskAsynchronously(ValhallaMMO.getInstance(), () -> {
-                if (!JoinLeaveListener.getLoadedProfiles().contains(p.getUniqueId())) return;
+                if (!JoinLeaveListener.getLoadedProfiles().contains(p.getUniqueId())) {
+                    releaseLock(lockKey, "SAVING");
+                    return;
+                }
                 for (Profile profile : persistentProfiles.getOrDefault(p.getUniqueId(), new HashMap<>()).values()){
                     insertOrUpdateProfile(p.getUniqueId(), conn, profile);
                 }
+                releaseLock(lockKey, "SAVING");
             });
         }
     }
