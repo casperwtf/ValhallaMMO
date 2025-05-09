@@ -32,7 +32,7 @@ public class JoinLeaveListener implements Listener {
     }
 
     @EventHandler
-    public void prePlayerJoin(AsyncPlayerPreLoginEvent ev) {
+    public void prePlayerJoin(AsyncPlayerPreLoginEvent ev) throws InterruptedException {
         if (ProfileRegistry.getPersistence().hasLock(ev.getUniqueId().toString(), "SAVING")) {
             while (true) {
                 if (!ProfileRegistry.getPersistence().hasLock(ev.getUniqueId().toString(), "SAVING")) break;
