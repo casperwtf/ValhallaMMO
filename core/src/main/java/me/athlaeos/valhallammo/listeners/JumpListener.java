@@ -54,7 +54,7 @@ public class JumpListener implements Listener {
         e.getPlayer().setAllowFlight(true);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e){
         if (ValhallaMMO.isWorldBlacklisted(e.getPlayer().getWorld().getName()) || e.getPlayer().getGameMode() == GameMode.SPECTATOR ||
                 e.getPlayer().getGameMode() == GameMode.CREATIVE) return;
@@ -73,9 +73,9 @@ public class JumpListener implements Listener {
         jumpsLeft.remove(e.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onFallDamage(EntityDamageEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled() || e.getCause() != EntityDamageEvent.DamageCause.FALL) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.getCause() != EntityDamageEvent.DamageCause.FALL) return;
         double jumpHeightBonus = AccumulativeStatManager.getCachedStats("JUMP_HEIGHT_MULTIPLIER", e.getEntity(), 10000, true);
         if (jumpHeightBonus == 0) return;
         double fallDamage = Math.max(0, e.getEntity().getFallDistance() - 3 - jumpHeightBonus);

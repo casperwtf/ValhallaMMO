@@ -74,9 +74,9 @@ public class LootListener implements Listener {
         blockBreakerMap.put(block.getLocation(), breaker.getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockPlayerBreak(BlockBreakEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || e.isCancelled() || e.getPlayer().getGameMode() == GameMode.CREATIVE) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || e.getPlayer().getGameMode() == GameMode.CREATIVE) return;
 
         Player p = e.getPlayer();
         Pair<Double, Integer> details = getFortuneAndLuck(p, e.getBlock());
@@ -104,9 +104,9 @@ public class LootListener implements Listener {
         preparedBlockDrops.remove(e.getBlock().getLocation());
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockHarvest(PlayerHarvestBlockEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getHarvestedBlock().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getHarvestedBlock().getWorld().getName())) return;
 
         Player p = e.getPlayer();
         Pair<Double, Integer> details = getFortuneAndLuck(p, e.getHarvestedBlock());
@@ -138,9 +138,9 @@ public class LootListener implements Listener {
         preparedBlockDrops.remove(e.getHarvestedBlock().getLocation());
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockBurnBreak(BlockBurnEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName())) return;
 
         UUID uuid = blockBreakerMap.get(e.getBlock().getLocation());
         blockBreakerMap.remove(e.getBlock().getLocation());
@@ -169,9 +169,9 @@ public class LootListener implements Listener {
         preparedBlockDrops.remove(e.getBlock().getLocation());
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockFadeBreak(BlockFadeEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName())) return;
 
         UUID uuid = blockBreakerMap.get(e.getBlock().getLocation());
         blockBreakerMap.remove(e.getBlock().getLocation());
@@ -203,9 +203,9 @@ public class LootListener implements Listener {
         preparedBlockDrops.remove(e.getBlock().getLocation());
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockDecay(LeavesDecayEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName())) return;
 
         UUID uuid = blockBreakerMap.get(e.getBlock().getLocation());
         blockBreakerMap.remove(e.getBlock().getLocation());
@@ -257,9 +257,9 @@ public class LootListener implements Listener {
         return new Pair<>(luck, fortune);
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockReplaceBreak(BlockFromToEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName())) return;
 
         UUID uuid = blockBreakerMap.get(e.getBlock().getLocation());
         blockBreakerMap.remove(e.getBlock().getLocation());
@@ -310,9 +310,9 @@ public class LootListener implements Listener {
         return value.map(MetadataValue::asInt).orElse(0);
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockBlockExplodeBreak(BlockExplodeEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName())) return;
 
         List<Block> blocks = new ArrayList<>(e.blockList());
         blocks.addAll(explodedBlocks.keySet().stream().map(Location::getBlock).toList());
@@ -355,9 +355,9 @@ public class LootListener implements Listener {
         return exploded.contains(b);
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockEntityExplodeBreak(EntityExplodeEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName())) return;
         Optional<MetadataValue> uuidMeta = e.getEntity().getMetadata("valhalla_entity_owner").stream().findAny();
         UUID uuid = uuidMeta.map(metadataValue -> UUID.fromString(metadataValue.asString())).orElse(null);
         Entity owner = uuid == null ? null : ValhallaMMO.getInstance().getServer().getEntity(uuid);
@@ -383,9 +383,9 @@ public class LootListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockEntityExplodeBreakFinal(EntityExplodeEvent e){
-        if (e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName())) return;
         Optional<MetadataValue> uuidMeta = e.getEntity().getMetadata("valhalla_entity_owner").stream().findAny();
         UUID uuid = uuidMeta.map(metadataValue -> UUID.fromString(metadataValue.asString())).orElse(null);
         Entity owner = uuid == null ? null : ValhallaMMO.getInstance().getServer().getEntity(uuid);
@@ -441,9 +441,9 @@ public class LootListener implements Listener {
         return false;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onContainerPlace(BlockPlaceEvent e){
-        if (e.isCancelled() || ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName())) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName())) return;
         ItemStack placed = e.getItemInHand();
         if (ItemUtils.isEmpty(placed)) return;
         ItemBuilder item = new ItemBuilder(placed);
@@ -605,23 +605,30 @@ public class LootListener implements Listener {
 
     @EventHandler
     public void onHopperTransfer(InventoryMoveItemEvent e){
-        if (chestCache.containsKey(e.getDestination().getLocation())) {
-            if (chestCache.get(e.getDestination().getLocation())) e.setCancelled(true);
+        Inventory destination = e.getDestination();
+        Location location = destination.getLocation();
+        Boolean cache = chestCache.get(location);
+        if (cache != null) {
+            if (cache) e.setCancelled(true);
             return;
         }
-        if (e.getDestination().getHolder() instanceof Container c && c.getBlock().getState() instanceof Lootable l && l.getLootTable() != null) {
+        InventoryHolder holder = destination.getHolder();
+        if (holder instanceof Container c && c.getBlock().getState() instanceof Lootable l && l.getLootTable() != null) {
             e.setCancelled(true);
-            chestCache.put(e.getDestination().getLocation(), true);
-        } else chestCache.put(e.getDestination().getLocation(), false);
-        if (e.getDestination().getHolder() instanceof Entity c && c instanceof Lootable l && l.getLootTable() != null) {
+            chestCache.put(location, true);
+            return;
+        }
+        if (holder instanceof Entity c && c instanceof Lootable l && l.getLootTable() != null) {
             e.setCancelled(true);
-            chestCache.put(e.getDestination().getLocation(), true);
-        } else chestCache.put(e.getDestination().getLocation(), false);
+            chestCache.put(location, true);
+            return;
+        }
+        chestCache.put(e.getDestination().getLocation(), false);
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onChestCartOpen(PlayerInteractAtEntityEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getRightClicked().getWorld().getName()) || e.isCancelled() || e.getHand() == EquipmentSlot.OFF_HAND) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getRightClicked().getWorld().getName()) || e.getHand() == EquipmentSlot.OFF_HAND) return;
         Entity entity = e.getRightClicked();
         if (entity.getType() != EntityType.MINECART_CHEST || !(entity instanceof Lootable l) || !(entity instanceof InventoryHolder c) || l.getLootTable() == null) return;
         if (ValhallaMMO.isUsingPaperMC() && !PaperLootRefillHandler.canGenerateLoot(entity, e.getPlayer())) return;
@@ -887,10 +894,10 @@ public class LootListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityEquipmentSpawn(EntitySpawnEvent e){
         if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || !(e.getEntity() instanceof LivingEntity le) || le.getEquipment() == null ||
-                e.isCancelled() || EntityClassification.matchesClassification(e.getEntityType(), EntityClassification.UNALIVE)) return;
+                EntityClassification.matchesClassification(e.getEntityType(), EntityClassification.UNALIVE)) return;
         AttributeInstance maxHealth = le.getAttribute(Attribute.GENERIC_MAX_HEALTH);
         if (e.getEntity().getCustomName() != null || (maxHealth != null && maxHealth.getDefaultValue() != maxHealth.getValue())) return; // do not modify equipment if entity is modified themselves
 
@@ -934,9 +941,9 @@ public class LootListener implements Listener {
         return killer == null ? null : ValhallaMMO.getInstance().getServer().getEntity(killer);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockDrops(BlockDropItemEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || e.isCancelled() || !transferToInventory.containsKey(e.getBlock().getLocation())){
+        if (ValhallaMMO.isWorldBlacklisted(e.getBlock().getWorld().getName()) || !transferToInventory.containsKey(e.getBlock().getLocation())){
             clear(e.getBlock());
             return;
         }
@@ -1017,9 +1024,9 @@ public class LootListener implements Listener {
 
     private static final Map<UUID, List<ItemStack>> preparedFishingDrops = new HashMap<>();
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPiglinBarter(PiglinBarterEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName())) return;
         LootTable table = LootTableRegistry.getLootTable(LootTables.PIGLIN_BARTERING);
         LootContext context = new LootContext.Builder(e.getEntity().getLocation()).killer(null).lootedEntity(null).lootingModifier(0).luck(0).build();
         if (table != null) {

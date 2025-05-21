@@ -22,9 +22,9 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class PotionBeltListener implements Listener {
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onConsumeItem(PlayerItemConsumeEvent e){
-        if (e.isCancelled() || e.getItem().getType() != Material.POTION || ItemUtils.isEmpty(e.getItem())) return;
+        if (e.getItem().getType() != Material.POTION || ItemUtils.isEmpty(e.getItem())) return;
         EquipmentSlot hand;
         if (e.getItem().equals(e.getPlayer().getInventory().getItemInMainHand())) hand = EquipmentSlot.HAND;
         else if (e.getItem().equals(e.getPlayer().getInventory().getItemInOffHand())) hand = EquipmentSlot.OFF_HAND;
@@ -43,9 +43,9 @@ public class PotionBeltListener implements Listener {
         }, 1L);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onScroll(PlayerItemHeldEvent e){
-        if (e.isCancelled() || !e.getPlayer().isSneaking()) return;
+        if (!e.getPlayer().isSneaking()) return;
         ItemStack previousItem = e.getPlayer().getInventory().getItem(e.getPreviousSlot());
         if (ItemUtils.isEmpty(previousItem)) return;
         ItemBuilder hand = new ItemBuilder(previousItem);
@@ -67,7 +67,7 @@ public class PotionBeltListener implements Listener {
         else return diff;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onThrow(ProjectileLaunchEvent e){
         if (!(e.getEntity() instanceof ThrownPotion t) || !(e.getEntity().getShooter() instanceof Player p)) return;
         EquipmentSlot hand;
@@ -88,9 +88,9 @@ public class PotionBeltListener implements Listener {
         }, 1L);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDrop(PlayerDropItemEvent e){
-        if (e.isCancelled() || (!e.getItemDrop().getItemStack().equals(e.getPlayer().getInventory().getItemInMainHand()))) return;
+        if (!e.getItemDrop().getItemStack().equals(e.getPlayer().getInventory().getItemInMainHand())) return;
         ItemStack dropped = e.getItemDrop().getItemStack();
         if (ItemUtils.isEmpty(dropped)) return;
         ItemBuilder item = new ItemBuilder(dropped);
@@ -109,9 +109,9 @@ public class PotionBeltListener implements Listener {
         }, 1L);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onClick(InventoryClickEvent e){
-        if (e.isCancelled() || !e.isRightClick() || e.isShiftClick() || e.getClick() == ClickType.DOUBLE_CLICK || !Timer.isCooldownPassed(e.getWhoClicked().getUniqueId(), "cooldown_potion_insertion")) return;
+        if (!e.isRightClick() || e.isShiftClick() || e.getClick() == ClickType.DOUBLE_CLICK || !Timer.isCooldownPassed(e.getWhoClicked().getUniqueId(), "cooldown_potion_insertion")) return;
         ItemStack clicked = e.getCurrentItem();
         ItemStack cursor = e.getCursor();
         if (ItemUtils.isEmpty(clicked)) return;

@@ -15,7 +15,7 @@ import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 
 public class RecipeDiscoveryListener implements Listener {
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onRecipeDiscover(PlayerRecipeDiscoverEvent e){
         if (CustomRecipeRegistry.getDisabledRecipes().contains(e.getRecipe()))
             e.setCancelled(true);

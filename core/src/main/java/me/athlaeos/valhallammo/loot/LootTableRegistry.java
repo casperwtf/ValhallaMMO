@@ -33,7 +33,6 @@ import org.bukkit.persistence.PersistentDataType;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class LootTableRegistry {
     private static final Gson gson = new GsonBuilder()

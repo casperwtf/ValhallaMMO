@@ -39,6 +39,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.*;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -148,9 +149,9 @@ public class MartialArtsSkill extends Skill implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onGrapple(PlayerInteractEntityEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getPlayer().getWorld().getName()) || e.isCancelled() ||
+        if (ValhallaMMO.isWorldBlacklisted(e.getPlayer().getWorld().getName()) ||
                 EntityClassification.matchesClassification(e.getRightClicked().getType(), EntityClassification.UNALIVE) ||
                 !(e.getRightClicked() instanceof LivingEntity l) ||
                 !Timer.isCooldownPassed(e.getPlayer().getUniqueId(), "grappling_attempt_cooldown") ||
@@ -237,9 +238,9 @@ public class MartialArtsSkill extends Skill implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onAttack(EntityDamageByEntityEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName())) return;
         Entity trueDamager = EntityUtils.getTrueDamager(e);
         if (trueDamager instanceof Player p && !(e.getDamager() instanceof Projectile) && e.getEntity() instanceof LivingEntity l){
             if (!EntityUtils.isUnarmed(p)) return;
@@ -334,9 +335,9 @@ public class MartialArtsSkill extends Skill implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onExpAttack(EntityDamageEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled() ||
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) ||
                 EntityClassification.matchesClassification(e.getEntityType(), EntityClassification.UNALIVE) ||
                 e.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK || !(e.getEntity() instanceof LivingEntity l) ||
                 EntityClassification.matchesClassification(l.getType(), EntityClassification.PASSIVE)) return;
@@ -360,9 +361,9 @@ public class MartialArtsSkill extends Skill implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCrit(EntityCriticallyHitEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName())) return;
         if (e.getCritter() instanceof Player p && e.getEntity() instanceof LivingEntity l && EntityUtils.isUnarmed(l)){
             ItemBuilder weapon = EntityCache.getAndCacheProperties(p).getMainHand();
             if (weapon != null && WeightClass.getWeightClass(weapon.getMeta()) != WeightClass.WEIGHTLESS) return;
@@ -374,7 +375,7 @@ public class MartialArtsSkill extends Skill implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMeditate(PlayerInteractEvent e){
-        if (e.getAction() != Action.RIGHT_CLICK_BLOCK || ValhallaMMO.isWorldBlacklisted(e.getPlayer().getWorld().getName()) ||
+        if (e.useInteractedBlock() == Event.Result.DENY || e.getAction() != Action.RIGHT_CLICK_BLOCK || ValhallaMMO.isWorldBlacklisted(e.getPlayer().getWorld().getName()) ||
                 e.getClickedBlock() == null || e.getBlockFace() != BlockFace.UP || getMeditationVehicle(e.getPlayer()) != null ||
                 e.getHand() == EquipmentSlot.OFF_HAND || e.getPlayer().isSneaking() || !EntityUtils.isUnarmed(e.getPlayer())) return;
         if (!Timer.isCooldownPassed(e.getPlayer().getUniqueId(), "cooldown_meditation")) {
@@ -478,7 +479,7 @@ public class MartialArtsSkill extends Skill implements Listener {
         Questionnaire.startQuestionnaire(e.getPlayer(), questionnaire);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onHandSwap(PlayerSwapHandItemsEvent e){
         if (ValhallaMMO.isWorldBlacklisted(e.getPlayer().getWorld().getName())) return;
         resetMeditation(e.getPlayer());

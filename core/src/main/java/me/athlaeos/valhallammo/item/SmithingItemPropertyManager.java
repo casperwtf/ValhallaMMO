@@ -150,9 +150,9 @@ public class SmithingItemPropertyManager {
         setTags(i, tags);
     }
 
-    public static void setTagLore(ItemBuilder builder) {
-        if (builder == null) return;
-        List<String> currentLore = builder.getLore() != null ? builder.getLore() : new ArrayList<>();
+    public static void setTagLore(ItemMeta meta) {
+        if (meta == null) return;
+        List<String> currentLore = meta.getLore() != null ? meta.getLore() : new ArrayList<>();
         List<String> newLore = new ArrayList<>();
         int tagIndex = -1; // the purpose of this is to track where in the lore tags are placed, so the position doesn't change
         for (String l : currentLore){
@@ -169,34 +169,9 @@ public class SmithingItemPropertyManager {
                 newLore.add(l); // if not, just add the line as is
             }
         }
-        Map<Integer, Integer> tags = CustomFlag.hasFlag(builder.getMeta(), CustomFlag.HIDE_TAGS) ? new HashMap<>() : getTags(builder.getMeta());
+        Map<Integer, Integer> tags = CustomFlag.hasFlag(meta, CustomFlag.HIDE_TAGS) ? new HashMap<>() : getTags(meta);
         tags.keySet().retainAll(tagLore.keySet()); // remove all tags that don't have a lore
         for (Integer tag : tags.keySet()){
-            String lore = tagLore.get(tag)
-                    .replace("%lv_roman%", StringUtils.toRoman(Math.max(1, tags.get(tag))))
-                    .replace("%lv_normal%", String.valueOf(tags.get(tag)));
-            if (tagIndex <= 0) newLore.add(lore);
-            else newLore.add(tagIndex, lore);
-        }
-        builder.lore(newLore);
-    }
-
-    public static void setTagLore(ItemMeta meta){
-        if (meta == null) return;
-        List<String> currentLore = meta.getLore() != null ? meta.getLore() : new ArrayList<>();
-        List<String> newLore = new ArrayList<>();
-        int tagIndex = -1; // the purpose of this is to track where in the lore tags are placed, so the position doesn't change
-        for (String l : currentLore){
-            String colorStrippedLine = ChatColor.stripColor(Utils.chat(l));
-            if (tagLore.values().stream().map(c -> ChatColor.stripColor(Utils.chat(c
-                    .replace("%lv_roman%", "")
-                    .replace("%lv_normal%", "")))
-            ).anyMatch(colorStrippedLine::contains)){ // if the current line of lore contains any of the tag lores (placeholders removed) then record this line index
-                if (tagIndex < 0) tagIndex = currentLore.indexOf(l);
-            } else newLore.add(l); // if not, just add the line as is
-        }
-        Map<Integer, Integer> tags = CustomFlag.hasFlag(meta, CustomFlag.HIDE_TAGS) ? new HashMap<>() : getTags(meta);
-        for (Integer tag : tags.keySet().stream().filter(tagLore::containsKey).collect(Collectors.toSet())){
             String lore = tagLore.get(tag)
                     .replace("%lv_roman%", StringUtils.toRoman(Math.max(1, tags.get(tag))))
                     .replace("%lv_normal%", String.valueOf(tags.get(tag)));

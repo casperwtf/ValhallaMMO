@@ -98,9 +98,9 @@ public class HeavyArmorSkill extends Skill implements Listener {
         ValhallaMMO.getInstance().getServer().getPluginManager().registerEvents(this, ValhallaMMO.getInstance());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamageTaken(EntityDamageByEntityEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName())) return;
         Entity trueDamager = EntityUtils.getTrueDamager(e);
         if (!(trueDamager instanceof LivingEntity) || !(e.getEntity() instanceof Player p) || p.isBlocking()) return;
         if (WorldGuardHook.inDisabledRegion(p.getLocation(), p, WorldGuardHook.VMMO_SKILL_HEAVYARMOR)) return;
@@ -136,9 +136,9 @@ public class HeavyArmorSkill extends Skill implements Listener {
         }, 2L);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPotionEffect(EntityPotionEffectEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled() || e.getNewEffect() == null || e.getCause() == EntityPotionEffectEvent.Cause.POTION_DRINK) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.getNewEffect() == null || e.getCause() == EntityPotionEffectEvent.Cause.POTION_DRINK) return;
         if (!(e.getEntity() instanceof Player p)) return;
         if (!hasPermissionAccess(p)) return;
         if (WorldGuardHook.inDisabledRegion(p.getLocation(), p, WorldGuardHook.VMMO_SKILL_HEAVYARMOR)) return;
@@ -151,9 +151,9 @@ public class HeavyArmorSkill extends Skill implements Listener {
                 profile.getImmuneEffects().contains(mapping.getNewEffect())) e.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPotionEffect(EntityCustomPotionEffectEvent e){
-        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.isCancelled() || e.getNewEffect() == null) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName()) || e.getNewEffect() == null) return;
         if (!(e.getEntity() instanceof Player p)) return;
         if (!hasPermissionAccess(p)) return;
         if (WorldGuardHook.inDisabledRegion(p.getLocation(), p, WorldGuardHook.VMMO_SKILL_HEAVYARMOR) ||
@@ -164,7 +164,7 @@ public class HeavyArmorSkill extends Skill implements Listener {
         if (profile.getImmuneEffects().contains(e.getNewEffect().getWrapper().getEffect())) e.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCombatLeave(PlayerLeaveCombatEvent e){
         long timeInCombat = e.getTimeInCombat();
         EntityProperties properties = EntityCache.getAndCacheProperties(e.getPlayer());

@@ -33,7 +33,7 @@ public class SmithingTableListener implements Listener {
 
     private final Map<UUID, SmithingAdditionInfo> smithingAdditionInfoMap = new HashMap<>();
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onSmithingInteract(InventoryClickEvent e){
         boolean isTemplateCompatible = MinecraftVersion.currentVersionNewerThan(MinecraftVersion.MINECRAFT_1_20);
         if (e.getView().getTopInventory() instanceof SmithingInventory s){

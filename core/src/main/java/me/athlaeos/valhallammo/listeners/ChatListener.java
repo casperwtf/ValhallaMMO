@@ -1,15 +1,11 @@
 package me.athlaeos.valhallammo.listeners;
 
-import me.athlaeos.valhallammo.Scripts;
 import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.dom.Question;
 import me.athlaeos.valhallammo.dom.Questionnaire;
-import me.athlaeos.valhallammo.utility.Utils;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-
-import java.util.Set;
 
 public class ChatListener implements Listener {
 

@@ -1,5 +1,6 @@
 package me.athlaeos.valhallammo.listeners;
 
+import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.playerstats.EntityCache;
 import me.athlaeos.valhallammo.playerstats.EntityProperties;
 import me.athlaeos.valhallammo.utility.EntityUtils;
@@ -18,9 +19,9 @@ import java.util.*;
 public class PacificationListener implements Listener {
     private final Map<UUID, Collection<UUID>> harmedBy = new HashMap<>();
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onTarget(EntityTargetLivingEntityEvent e){
-        if (e.isCancelled() || !(e.getTarget() instanceof Player p)) return;
+        if (!(e.getTarget() instanceof Player p) || ValhallaMMO.isWorldBlacklisted(p.getWorld().getName())) return;
         if (harmedBy.getOrDefault(e.getEntity().getUniqueId(), new HashSet<>()).contains(p.getUniqueId())) return;
         EntityProperties playerProperties = EntityCache.getAndCacheProperties(p);
         if (!playerProperties.getActivePotionEffects().containsKey("PACIFICATION")) return;
@@ -28,9 +29,9 @@ public class PacificationListener implements Listener {
         e.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent e){
-        if (e.isCancelled()) return;
+        if (ValhallaMMO.isWorldBlacklisted(e.getEntity().getWorld().getName())) return;
         Entity trueDamager = EntityUtils.getTrueDamager(e);
         if (!(trueDamager instanceof Player p)) return;
         EntityProperties playerProperties = EntityCache.getAndCacheProperties(p);
@@ -47,6 +48,8 @@ public class PacificationListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onUnload(EntitiesUnloadEvent e){
-        e.getEntities().forEach(en -> harmedBy.remove(en.getUniqueId()));
+        for (Entity en : e.getEntities()) {
+            harmedBy.remove(en.getUniqueId());
+        }
     }
 }

@@ -33,6 +33,10 @@ public enum WeightClass {
         this.matchingMaterials.addAll(ItemUtils.getMaterialSet(matches));
     }
 
+    public static boolean matchesWeightClass(ItemMeta meta, WeightClass weightClass) {
+        return weightClass == null || weightClass == getWeightClass(meta);
+    }
+
     public static WeightClass getWeightClass(ItemMeta meta){
         if (meta == null) return WEIGHTLESS;
         Material stored = ItemUtils.getStoredType(meta);

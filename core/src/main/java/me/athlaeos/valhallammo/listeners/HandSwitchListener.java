@@ -40,7 +40,7 @@ public class HandSwitchListener implements Listener {
         AccumulativeStatManager.updateStats(l);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onSwapHands(PlayerItemHeldEvent e){
         // if the player has switched their main hand record their UUID
         // this is done with a .5s delay to make sure this isn't spam-able which could potentially lag the server
@@ -51,7 +51,7 @@ public class HandSwitchListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSwapHands(PlayerSwapHandItemsEvent e){
         // if the player has switched their main hand record their UUID
         // this is done with a .5s delay to make sure this isn't spam-able which could potentially lag the server
@@ -62,7 +62,7 @@ public class HandSwitchListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemBreak(PlayerItemBreakEvent e){
         ValhallaMMO.getInstance().getServer().getScheduler().runTaskLater(ValhallaMMO.getInstance(), () -> {
             reset(e.getPlayer());
@@ -89,7 +89,7 @@ public class HandSwitchListener implements Listener {
         } else return !ItemUtils.isEmpty(p.getInventory().getItemInOffHand());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onAttack(EntityDamageByEntityEvent e){
         // if the player has their UUID recorded and interacts with any item, update their hand equipment.
         // if we refresh the player's hand equipment every interact packet or held item switch event it could lag the

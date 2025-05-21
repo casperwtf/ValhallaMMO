@@ -188,13 +188,13 @@ public class EntityUtils {
     public static double combinedAttributeValue(LivingEntity entity, String attribute, WeightClass weightFilter, String equipmentPenalty, boolean mainHandOnly){
         double total = 0;
         EntityProperties properties = EntityCache.getAndCacheProperties(entity);
-        if (properties.getHelmet() != null && WeightClass.getWeightClass(properties.getHelmet().getMeta()) == weightFilter)
+        if (properties.getHelmet() != null && WeightClass.matchesWeightClass(properties.getHelmet().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, properties.getHelmet().getMeta(), properties.getHelmetAttributes(), attribute, null);
-        if (properties.getChestplate() != null && WeightClass.getWeightClass(properties.getChestplate().getMeta()) == weightFilter)
+        if (properties.getChestplate() != null && WeightClass.matchesWeightClass(properties.getChestplate().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, properties.getChestplate().getMeta(), properties.getChestPlateAttributes(), attribute, null);
-        if (properties.getLeggings() != null && WeightClass.getWeightClass(properties.getLeggings().getMeta()) == weightFilter)
+        if (properties.getLeggings() != null && WeightClass.matchesWeightClass(properties.getLeggings().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, properties.getLeggings().getMeta(), properties.getLeggingsAttributes(), attribute, null);
-        if (properties.getBoots() != null && WeightClass.getWeightClass(properties.getBoots().getMeta()) == weightFilter)
+        if (properties.getBoots() != null && WeightClass.matchesWeightClass(properties.getBoots().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, properties.getBoots().getMeta(), properties.getBootsAttributes(), attribute, null);
 
         if (properties.getMainHand() != null && ItemUtils.usedMainHand(properties.getMainHand(), properties.getOffHand()))
@@ -202,6 +202,7 @@ public class EntityUtils {
         else if (!mainHandOnly && properties.getOffHand() != null) total += getValue(entity, equipmentPenalty, properties.getOffHand().getMeta(), properties.getOffHandAttributes(), attribute, null);
 
         for (ItemBuilder extra : properties.getMiscEquipment()){
+            if (!WeightClass.matchesWeightClass(extra.getMeta(), weightFilter)) continue;
             total += getValue(entity, equipmentPenalty, extra.getMeta(), properties.getMiscEquipmentAttributes().get(extra), attribute, null);
         }
         return total;
@@ -210,21 +211,22 @@ public class EntityUtils {
     public static double combinedAttackerAttributeValue(LivingEntity entity, String attribute, WeightClass weightFilter, String equipmentPenalty, boolean mainHand){
         double total = 0;
         EntityProperties properties = EntityCache.getAndCacheProperties(entity);
-        if (properties.getHelmet() != null && WeightClass.getWeightClass(properties.getHelmet().getMeta()) == weightFilter)
+        if (properties.getHelmet() != null && WeightClass.matchesWeightClass(properties.getHelmet().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, properties.getHelmet().getMeta(), properties.getHelmetAttributes(), attribute, null);
-        if (properties.getChestplate() != null && WeightClass.getWeightClass(properties.getChestplate().getMeta()) == weightFilter)
+        if (properties.getChestplate() != null && WeightClass.matchesWeightClass(properties.getChestplate().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, properties.getChestplate().getMeta(), properties.getChestPlateAttributes(), attribute, null);
-        if (properties.getLeggings() != null && WeightClass.getWeightClass(properties.getLeggings().getMeta()) == weightFilter)
+        if (properties.getLeggings() != null && WeightClass.matchesWeightClass(properties.getLeggings().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, properties.getLeggings().getMeta(), properties.getLeggingsAttributes(), attribute, null);
-        if (properties.getBoots() != null && WeightClass.getWeightClass(properties.getBoots().getMeta()) == weightFilter)
+        if (properties.getBoots() != null && WeightClass.matchesWeightClass(properties.getBoots().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, properties.getBoots().getMeta(), properties.getBootsAttributes(), attribute, null);
 
         if (mainHand && properties.getMainHand() != null)
             total += getValue(entity, equipmentPenalty, properties.getMainHand().getMeta(), properties.getMainHandAttributes(), attribute, null);
-        if (!mainHand && properties.getOffHand() != null)
+        else if (!mainHand && properties.getOffHand() != null)
             total += getValue(entity, equipmentPenalty, properties.getOffHand().getMeta(), properties.getOffHandAttributes(), attribute, null);
 
         for (ItemBuilder extra : properties.getMiscEquipment()){
+            if (!WeightClass.matchesWeightClass(extra.getMeta(), weightFilter)) continue;
             total += getValue(entity, equipmentPenalty, extra.getMeta(), properties.getMiscEquipmentAttributes().get(extra), attribute, null);
         }
         return total;
@@ -267,16 +269,16 @@ public class EntityUtils {
         double total = 0;
         EntityProperties properties = EntityCache.getAndCacheProperties(entity);
         ItemBuilder helmet = properties.getHelmet();
-        if (helmet != null && WeightClass.getWeightClass(helmet.getMeta()) == weightFilter)
+        if (helmet != null && WeightClass.matchesWeightClass(properties.getHelmet().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, helmet.getMeta(), properties.getHelmetAttributes(), attribute, operation);
         ItemBuilder chestPlate = properties.getChestplate();
-        if (chestPlate != null && WeightClass.getWeightClass(chestPlate.getMeta()) == weightFilter)
+        if (chestPlate != null && WeightClass.matchesWeightClass(properties.getChestplate().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, chestPlate.getMeta(), properties.getChestPlateAttributes(), attribute, operation);
         ItemBuilder leggings = properties.getLeggings();
-        if (leggings != null && WeightClass.getWeightClass(leggings.getMeta()) == weightFilter)
+        if (leggings != null && WeightClass.matchesWeightClass(properties.getLeggings().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, leggings.getMeta(), properties.getLeggingsAttributes(), attribute, operation);
         ItemBuilder boots = properties.getBoots();
-        if (boots != null && WeightClass.getWeightClass(boots.getMeta()) == weightFilter)
+        if (boots != null && WeightClass.matchesWeightClass(properties.getBoots().getMeta(), weightFilter))
             total += getValue(entity, equipmentPenalty, boots.getMeta(), properties.getBootsAttributes(), attribute, operation);
 
         if (properties.getMainHand() != null && ItemUtils.usedMainHand(properties.getMainHand(), properties.getOffHand()))
@@ -284,7 +286,7 @@ public class EntityUtils {
         else if (!mainHandOnly && properties.getOffHand() != null) total += getValue(entity, equipmentPenalty, properties.getOffHand().getMeta(), properties.getOffHandAttributes(), attribute, operation);
 
         for (ItemBuilder extra : properties.getMiscEquipment()){
-            if (WeightClass.getWeightClass(extra.getMeta()) != weightFilter) continue;
+            if (weightFilter != null && WeightClass.matchesWeightClass(extra.getMeta(), weightFilter)) continue;
             total += getValue(entity, equipmentPenalty, extra.getMeta(), properties.getMiscEquipmentAttributes().get(extra), attribute, operation);
         }
         return total;
