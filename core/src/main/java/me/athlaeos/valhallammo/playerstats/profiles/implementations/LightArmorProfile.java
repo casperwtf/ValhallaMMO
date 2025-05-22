@@ -3,6 +3,7 @@ package me.athlaeos.valhallammo.playerstats.profiles.implementations;
 import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.BooleanProperties;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
@@ -14,7 +15,9 @@ import java.util.Collection;
 
 @SuppressWarnings("unused")
 public class LightArmorProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("lightArmorMultiplier", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create());
 
         floatStat("movementSpeedPerPiece", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create());
@@ -185,7 +188,7 @@ public class LightArmorProfile extends Profile {
 
     @Override
     public LightArmorProfile getBlankProfile(Player owner) {
-        return new LightArmorProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new LightArmorProfile(owner));
     }
 
     @Override

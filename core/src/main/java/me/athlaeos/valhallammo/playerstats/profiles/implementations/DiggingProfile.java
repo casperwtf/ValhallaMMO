@@ -3,6 +3,7 @@ package me.athlaeos.valhallammo.playerstats.profiles.implementations;
 import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
 import me.athlaeos.valhallammo.skills.skills.implementations.DiggingSkill;
@@ -11,7 +12,9 @@ import org.bukkit.entity.Player;
 
 @SuppressWarnings("unused")
 public class DiggingProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("diggingDrops", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create());
         floatStat("diggingLuck", new PropertyBuilder().format(StatFormat.FLOAT_P2).perkReward().create());
         floatStat("diggingSpeedBonus", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create());
@@ -68,7 +71,7 @@ public class DiggingProfile extends Profile {
 
     @Override
     public DiggingProfile getBlankProfile(Player owner) {
-        return new DiggingProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new DiggingProfile(owner));
     }
 
     @Override

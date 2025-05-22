@@ -3,6 +3,7 @@ package me.athlaeos.valhallammo.playerstats.profiles.implementations;
 import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.BooleanProperties;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
@@ -12,7 +13,9 @@ import org.bukkit.entity.Player;
 
 @SuppressWarnings("unused")
 public class FarmingProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("farmingDrops", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create());
         floatStat("farmingLuck", new PropertyBuilder().format(StatFormat.FLOAT_P2).perkReward().create());
         floatStat("farmingExperienceRate", new PropertyBuilder().format(StatFormat.FLOAT_P2).perkReward().create());
@@ -82,7 +85,7 @@ public class FarmingProfile extends Profile {
 
     @Override
     public FarmingProfile getBlankProfile(Player owner) {
-        return new FarmingProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new FarmingProfile(owner));
     }
 
     @Override

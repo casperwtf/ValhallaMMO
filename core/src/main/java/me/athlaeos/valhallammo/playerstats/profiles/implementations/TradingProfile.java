@@ -4,6 +4,7 @@ import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.item.FoodClass;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.BooleanProperties;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
@@ -15,7 +16,9 @@ import java.util.Collection;
 
 @SuppressWarnings("unused")
 public class TradingProfile extends Profile { // TODO registration
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("tradingLuck", new PropertyBuilder().format(StatFormat.FLOAT_P1).perkReward().create());
         floatStat("tradingDiscount", new PropertyBuilder().format(StatFormat.PERCENTILE_BASE_1_P1).perkReward().create());
         floatStat("tradingStockMultiplier", new PropertyBuilder().format(StatFormat.PERCENTILE_BASE_1_P1).perkReward().create());
@@ -45,7 +48,7 @@ public class TradingProfile extends Profile { // TODO registration
 
     @Override
     public TradingProfile getBlankProfile(Player owner) {
-        return new TradingProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new TradingProfile(owner));
     }
 
     @Override

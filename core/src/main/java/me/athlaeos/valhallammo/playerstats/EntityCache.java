@@ -6,13 +6,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EntityCache {
     private static final long CACHE_REFRESH_DELAY = 10000;
     private static final long CACHE_CLEANUP_DELAY = 600000;
-    private static final Map<UUID, EntityProperties> cachedProperties = new HashMap<>();
-    private static final Map<UUID, Long> lastCacheRefreshMap = new HashMap<>();
+    private static final Map<UUID, EntityProperties> cachedProperties = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> lastCacheRefreshMap = new ConcurrentHashMap<>();
     private static long lastCacheCleanup = System.currentTimeMillis();
 
     public static EntityProperties getAndCacheProperties(LivingEntity entity){

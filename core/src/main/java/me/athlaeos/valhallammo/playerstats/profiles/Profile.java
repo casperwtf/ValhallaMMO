@@ -11,6 +11,7 @@ import me.athlaeos.valhallammo.skills.skills.Skill;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.*;
 
 /**
@@ -40,14 +41,6 @@ public abstract class Profile {
 
     public void onCacheRefresh() {
         // do nothing by default
-    }
-
-    {
-        intStat("level", new PropertyBuilder().format(StatFormat.INT).min(0).create());
-        doubleStat("exp", new PropertyBuilder().format(StatFormat.FLOAT_P2).create());
-        doubleStat("exp_total", new PropertyBuilder().format(StatFormat.FLOAT_P2).min(0).create());
-        intStat("newGamePlus"); // amount of times the player has entered a new skill loop
-        intStat("maxAllowedLevel", Short.MAX_VALUE, new PropertyBuilder().format(StatFormat.INT).min(0).perkReward().create());
     }
 
     public int getLevel(){
@@ -296,6 +289,34 @@ public abstract class Profile {
         return numberStatProperties;
     }
 
+    @OverridingMethodsMustInvokeSuper
+    public void initStats() {
+        intStat("level", new PropertyBuilder().format(StatFormat.INT).min(0).create());
+        doubleStat("exp", new PropertyBuilder().format(StatFormat.FLOAT_P2).create());
+        doubleStat("exp_total", new PropertyBuilder().format(StatFormat.FLOAT_P2).min(0).create());
+        intStat("newGamePlus"); // amount of times the player has entered a new skill loop
+        intStat("maxAllowedLevel", Short.MAX_VALUE, new PropertyBuilder().format(StatFormat.INT).min(0).perkReward().create());
+    }
+    public void copyStats(Profile profile) {
+        this.numberStatProperties.putAll(profile.numberStatProperties);
+        this.tablesToUpdate.addAll(profile.tablesToUpdate);
+        this.allStatNames.addAll(profile.allStatNames);
+        for (Map.Entry<String, NumberHolder<Integer>> entry : profile.ints.entrySet()) {
+            this.ints.put(entry.getKey(), entry.getValue().copy());
+        }
+        for (Map.Entry<String, NumberHolder<Float>> entry : profile.floats.entrySet()) {
+            this.floats.put(entry.getKey(), entry.getValue().copy());
+        }
+        for (Map.Entry<String, NumberHolder<Double>> entry : profile.doubles.entrySet()) {
+            this.doubles.put(entry.getKey(), entry.getValue().copy());
+        }
+        for (Map.Entry<String, Collection<String>> entry : profile.stringSets.entrySet()) {
+            this.stringSets.put(entry.getKey(), new HashSet<>(entry.getValue()));
+        }
+        for (Map.Entry<String, BooleanHolder> entry : profile.booleans.entrySet()) {
+            this.booleans.put(entry.getKey(), entry.getValue().copy());
+        }
+    }
     public abstract Profile getBlankProfile(Player owner);
 
     /**
@@ -389,6 +410,10 @@ public abstract class Profile {
         public T getDefault() {
             return def;
         }
+
+        public NumberHolder<T> copy() {
+            return new NumberHolder<>(value, def, properties);
+        }
     }
 
     protected static class BooleanHolder {
@@ -415,6 +440,10 @@ public abstract class Profile {
 
         public boolean getDefault() {
             return def;
+        }
+
+        public BooleanHolder copy() {
+            return new BooleanHolder(value, def, properties);
         }
     }
 

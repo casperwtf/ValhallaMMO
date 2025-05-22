@@ -3,6 +3,7 @@ package me.athlaeos.valhallammo.playerstats.profiles.implementations;
 import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.BooleanProperties;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
@@ -12,7 +13,9 @@ import org.bukkit.entity.Player;
 
 @SuppressWarnings("unused")
 public class LightWeaponsProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("damageMultiplier", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create());
         floatStat("powerAttackDamageMultiplier", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create()); // "overhead" hits are what Minecraft normally considers "critical hits", aka falling while hitting. These hits can now do configurable damage, a fraction of which is shared to other mobs in the area.
         floatStat("powerAttackFraction", new PropertyBuilder().format(StatFormat.PERCENTILE_BASE_1_P1).perkReward().create());
@@ -207,7 +210,7 @@ public class LightWeaponsProfile extends Profile {
 
     @Override
     public LightWeaponsProfile getBlankProfile(Player owner) {
-        return new LightWeaponsProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new LightWeaponsProfile(owner));
     }
 
     @Override

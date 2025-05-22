@@ -4,6 +4,7 @@ import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.item.EnchantmentClassification;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
 import me.athlaeos.valhallammo.skills.skills.implementations.EnchantingSkill;
@@ -15,7 +16,9 @@ import java.util.Collection;
 
 @SuppressWarnings("unused")
 public class EnchantingProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("enchantingSkill", new PropertyBuilder().format(StatFormat.FLOAT_P1).min(0).perkReward().create());
         floatStat("anvilSkill", new PropertyBuilder().format(StatFormat.FLOAT_P1).min(0).perkReward().create());
 
@@ -182,7 +185,7 @@ public class EnchantingProfile extends Profile {
 
     @Override
     public EnchantingProfile getBlankProfile(Player owner) {
-        return new EnchantingProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new EnchantingProfile(owner));
     }
 
     @Override

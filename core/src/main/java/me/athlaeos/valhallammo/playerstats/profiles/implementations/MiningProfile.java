@@ -5,6 +5,7 @@ import me.athlaeos.valhallammo.item.ItemBuilder;
 import me.athlaeos.valhallammo.item.MiningSpeed;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.BooleanProperties;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
@@ -20,7 +21,9 @@ import java.util.Collection;
 
 @SuppressWarnings("unused")
 public class MiningProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("miningDrops", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create());
         floatStat("miningLuck", new PropertyBuilder().format(StatFormat.FLOAT_P2).perkReward().create());
         floatStat("blastingDrops", new PropertyBuilder().format(StatFormat.DIFFERENCE_PERCENTILE_BASE_1_P1).perkReward().create());
@@ -145,7 +148,7 @@ public class MiningProfile extends Profile {
 
     @Override
     public MiningProfile getBlankProfile(Player owner) {
-        return new MiningProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new MiningProfile(owner));
     }
 
     @Override

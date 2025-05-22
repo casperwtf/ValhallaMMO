@@ -3,6 +3,7 @@ package me.athlaeos.valhallammo.playerstats.profiles.implementations;
 import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.BooleanProperties;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.potioneffects.EffectClass;
@@ -15,7 +16,9 @@ import java.util.Collection;
 
 @SuppressWarnings("unused")
 public class AlchemyProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("genericBrewingSkill", new PropertyBuilder().format(StatFormat.FLOAT_P1).min(0).perkReward().create());
         floatStat("buffBrewingSkill", new PropertyBuilder().format(StatFormat.FLOAT_P1).min(0).perkReward().create());
         floatStat("debuffBrewingSkill", new PropertyBuilder().format(StatFormat.FLOAT_P1).min(0).perkReward().create());
@@ -133,7 +136,7 @@ public class AlchemyProfile extends Profile {
 
     @Override
     public AlchemyProfile getBlankProfile(Player owner) {
-        return new AlchemyProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new AlchemyProfile(owner));
     }
 
     @Override

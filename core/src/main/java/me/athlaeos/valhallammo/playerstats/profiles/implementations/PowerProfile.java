@@ -4,6 +4,7 @@ import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.item.FoodClass;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.BooleanProperties;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
@@ -15,7 +16,9 @@ import java.util.Collection;
 
 @SuppressWarnings("unused")
 public class PowerProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         intStat("spendableSkillPoints", new PropertyBuilder().format(StatFormat.INT).perkReward().create());
         intStat("spentSkillPoints", new PropertyBuilder().format(StatFormat.INT).perkReward().create());
         intStat("spendablePrestigePoints", new PropertyBuilder().format(StatFormat.INT).perkReward().create());
@@ -564,7 +567,7 @@ public class PowerProfile extends Profile {
 
     @Override
     public PowerProfile getBlankProfile(Player owner) {
-        return new PowerProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new PowerProfile(owner));
     }
 
     @Override

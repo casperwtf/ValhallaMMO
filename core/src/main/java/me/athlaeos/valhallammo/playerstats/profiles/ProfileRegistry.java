@@ -54,6 +54,7 @@ public class ProfileRegistry {
         Map<Class<? extends Profile>, Profile> profiles = new HashMap<>(registeredProfiles);
         profiles.put(p.getClass(), p);
         registeredProfiles = Collections.unmodifiableMap(profiles);
+        p.initStats();
         p.registerPerkRewards();
 
         persistence.onProfileRegistration(p);
@@ -171,5 +172,12 @@ public class ProfileRegistry {
 
     public static void reset(Player p, Class<? extends Skill> type) {
         persistence.resetSkillProgress(p, type);
+    }
+
+    public static <T extends Profile> T copyDefaultStats(T profile) {
+        Profile defaultProfile = registeredProfiles.get(profile.getClass());
+        if (defaultProfile == null) return profile;
+        profile.copyStats(defaultProfile);
+        return profile;
     }
 }

@@ -356,50 +356,6 @@ perks:
         locked: GRAY_DYE:1172713
         unlockable: ORANGE_DYE:1172813
         unlocked: LIME_DYE:1172913
-  martialarts_perk_final:
-    icon: WHITE_CONCRETE
-    coords: "4,6"
-    name: "<lang.martialarts_perk_final_name>"
-    description: "<lang.martialarts_perk_final_description>"
-    other_levels_required:
-      - SMITHING:100
-      - ALCHEMY:100
-      - ENCHANTING:100
-      - LIGHT_WEAPONS:100
-      - HEAVY_WEAPONS:100
-      - LIGHT_ARMOR:100
-      - HEAVY_ARMOR:100
-      - ARCHERY:100
-      - MINING:100
-      - FISHING:100
-      - FARMING:100
-      - WOODCUTTING:100
-      - DIGGING:100
-    cost: 0
-    hidden: true
-    required_lv: 100
-    perk_rewards:
-      enable_flight: []
-      p:alchemy_genericbrewingskill_add: 50
-      p:archery_bowdamagemultiplier_add: 0.3
-      p:digging_diggingdrops_add: 0.3
-      p:digging_diggingluck_add: 3
-      p:enchanting_enchantingskill_add: 50
-      p:enchanting_anvilskill_add: 50
-      p:farming_farmingdrops_add: 0.3
-      p:farming_butcherydrops_add: 0.3
-      p:fishing_fishingdrops_add: 0.5
-      p:heavyweapons_damagemultiplier_add: 0.15
-      p:heavyarmor_damageresistanceperpiece_add: 0.01875
-      p:lightarmor_damageresistanceperpiece_add: 0.0125
-      p:lightweapons_damagemultiplier_add: 0.15
-      p:mining_blastingdrops_add: 0.25
-      p:mining_miningdrops_add: 0.25
-      p:smithing_genericcraftingskill_add: 50
-      p:perks_fake_unlock_add:
-        - martialarts_perk_final
-    messages:
-      - "<lang.martialarts_perk_final_messages>"
   martialarts_perk_ng1:
     icon: BLACK_CONCRETE
     coords: "8,4"

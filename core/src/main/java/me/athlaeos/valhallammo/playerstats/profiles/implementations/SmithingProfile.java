@@ -4,6 +4,7 @@ import me.athlaeos.valhallammo.ValhallaMMO;
 import me.athlaeos.valhallammo.item.MaterialClass;
 import me.athlaeos.valhallammo.playerstats.format.StatFormat;
 import me.athlaeos.valhallammo.playerstats.profiles.Profile;
+import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.playerstats.profiles.properties.PropertyBuilder;
 import me.athlaeos.valhallammo.skills.skills.Skill;
 import me.athlaeos.valhallammo.skills.skills.implementations.SmithingSkill;
@@ -12,7 +13,9 @@ import org.bukkit.entity.Player;
 
 @SuppressWarnings("unused")
 public class SmithingProfile extends Profile {
-    {
+    @Override
+    public void initStats() {
+        super.initStats();
         floatStat("genericCraftingSkill", new PropertyBuilder().format(StatFormat.FLOAT_P1).min(0).perkReward().create());
         floatStat("bowCraftingSkill", new PropertyBuilder().format(StatFormat.FLOAT_P1).min(0).perkReward().create());
         floatStat("crossbowCraftingSkill", new PropertyBuilder().format(StatFormat.FLOAT_P1).min(0).perkReward().create());
@@ -183,7 +186,7 @@ public class SmithingProfile extends Profile {
 
     @Override
     public SmithingProfile getBlankProfile(Player owner) {
-        return new SmithingProfile(owner);
+        return ProfileRegistry.copyDefaultStats(new SmithingProfile(owner));
     }
 
     @Override
