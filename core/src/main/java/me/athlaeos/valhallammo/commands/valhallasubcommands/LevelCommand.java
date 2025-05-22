@@ -9,6 +9,7 @@ import me.athlaeos.valhallammo.utility.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -44,14 +45,26 @@ public class LevelCommand implements Command {
                 return true;
             }
 
-            Skill skill = SkillRegistry.getSkill(args[1].toUpperCase(java.util.Locale.US));
-            if (skill == null) {
-                Utils.sendMessage(sender, Utils.chat(TranslationManager.getTranslation("error_command_invalid_skill")));
-                return true;
+            Skill[] skills;
+            if (args[1].equalsIgnoreCase("all")) {
+                skills = SkillRegistry.getAllSkills().values().toArray(new Skill[0]);
+            } else {
+                Skill skill = SkillRegistry.getSkill(args[1].toUpperCase(java.util.Locale.US));
+                if (skill == null) {
+                    Utils.sendMessage(sender, Utils.chat(TranslationManager.getTranslation("error_command_invalid_skill")));
+                    return true;
+                }
+                skills = new Skill[] { skill };
             }
+
             for (Player target : targets){
-                skill.addLevels(target, amount, false, PlayerSkillExperienceGainEvent.ExperienceGainReason.COMMAND);
-                sender.sendMessage("Added levels");
+                for (Skill skill : skills){
+                    skill.addLevels(target, amount, false, PlayerSkillExperienceGainEvent.ExperienceGainReason.COMMAND);
+                    Utils.sendMessage(sender, TranslationManager.getTranslation("status_command_level_success")
+                            .replace("%player%", target.getName())
+                            .replace("%amount%", String.format("%,d", amount))
+                            .replace("%skill%", skill.getDisplayName()));
+                }
             }
             return true;
         }
@@ -86,7 +99,9 @@ public class LevelCommand implements Command {
     @Override
     public List<String> getSubcommandArgs(CommandSender sender, String[] args) {
         if (args.length == 2){
-            return SkillRegistry.getAllSkills().values().stream().map(Skill::getType).map(String::toLowerCase).collect(Collectors.toList());
+            List<String> skills = new ArrayList<>(SkillRegistry.getAllSkills().values().stream().map(Skill::getType).map(String::toLowerCase).toList());
+            skills.add("all");
+            return skills;
         }
         return null;
     }
