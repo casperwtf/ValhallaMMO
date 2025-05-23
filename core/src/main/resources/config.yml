@@ -11,6 +11,8 @@ db_password: 'password'
 db_port: 3306
 db_ping_delay: 24000 # delay (in game ticks) where the database is pinged to keep the connection alive
 db_persist_delay: 6000 # delay (in game ticks) where all profiles currently in memory are persisted.
+# REDIS
+redis_url: 'redis://127.0.0.1:6379'
 # Leaderboards are also reset after this happens.
 # Should a crash happen, it will not roll back too much progress. Resets immediately persist someone's profile
 profile_caching: 10000 # duration (in milliseconds) where profiles are cached in memory. Changes to profiles should

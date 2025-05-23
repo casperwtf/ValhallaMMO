@@ -13,11 +13,12 @@ import me.athlaeos.valhallammo.playerstats.profiles.Profile;
 import me.athlaeos.valhallammo.playerstats.profiles.ProfileRegistry;
 import me.athlaeos.valhallammo.skills.skills.SkillRegistry;
 import me.athlaeos.valhallammo.utility.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
@@ -25,6 +26,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 public class SQL extends ProfilePersistence implements Database, LeaderboardCompatible {
+    private static final Logger LOGGER = LoggerFactory.getLogger("ValhallaMMO SQL");
     private final Map<UUID, Map<Class<? extends Profile>, Profile>> persistentProfiles = new HashMap<>();
     private final Map<UUID, Map<Class<? extends Profile>, Profile>> skillProfiles = new HashMap<>();
 
@@ -34,22 +36,32 @@ public class SQL extends ProfilePersistence implements Database, LeaderboardComp
     public void startSaveQueue() {
         if (saveQueueStarted) return;
         saveQueueStarted = true;
-        Bukkit.getScheduler().runTaskTimerAsynchronously(ValhallaMMO.getInstance(), () -> {
-            List<Profile> profiles = saveQueue.poll();
-            if (profiles == null || profiles.isEmpty()) return;
-            if (!acquireLock(profiles.get(0).getOwner().toString(), "SAVING")) {
-                saveQueue.add(profiles);
-                return;
-            }
-            try {
-                for (Profile profile : profiles) {
-                    if (profile.getOwner() == null) continue;
-                    insertOrUpdateProfile(profile.getOwner(), conn, profile);
+        Thread thread = new Thread(() -> {
+            while (true) {
+                List<Profile> profiles = saveQueue.poll();
+                if (profiles == null || profiles.isEmpty()) return;
+                String player = profiles.get(0).getOwner().toString();
+                String lock = UUID.randomUUID().toString();
+                LOGGER.info("Queue attempting saving profiles for {} with lock {}", player, lock);
+                if (!acquireLock(player, lock)) {
+                    LOGGER.info("Could not acquire lock for {}, re-queueing save", player);
+                    saveQueue.add(profiles);
+                    return;
                 }
-            } finally {
-                releaseLock(profiles.get(0).getOwner().toString(), "SAVING");
+                try {
+                    for (Profile profile : profiles) {
+                        if (profile.getOwner() == null) continue;
+                        insertOrUpdateProfile(profile.getOwner(), conn, profile);
+                    }
+                } finally {
+                    releaseLock(profiles.get(0).getOwner().toString(), lock);
+                    LOGGER.info("Releasing lock for {} with lock {}", player, lock);
+                }
             }
-        }, 0L, 1L);
+        });
+        thread.setDaemon(true);
+        thread.setName("ValhallaMMO SQL Save Queue");
+        thread.start();
     }
 
     private Connection conn;
@@ -275,41 +287,55 @@ public class SQL extends ProfilePersistence implements Database, LeaderboardComp
 
     @Override
     public void saveAllProfiles() {
-        for (UUID p : new HashSet<>(persistentProfiles.keySet())){
-            if (!persistentProfiles.containsKey(p)) continue;
-            Player player = ValhallaMMO.getInstance().getServer().getPlayer(p);
-            for (Profile profile : persistentProfiles.getOrDefault(p, new HashMap<>()).values()){
-                insertOrUpdateProfile(p, conn, profile);
-            }
-            if (player == null || !player.isOnline()) persistentProfiles.remove(p);
+        for (UUID uuid : new HashSet<>(persistentProfiles.keySet())) {
+            saveProfile(uuid);
         }
     }
 
     @Override
-    public void saveProfile(Player p) {
-        UUID uuid = p.getUniqueId();
-        String lockKey = uuid.toString();
-        if (!acquireLock(lockKey, "SAVING")) {
-            // Queue saving
-            saveQueue.add(new ArrayList<>(persistentProfiles.getOrDefault(uuid, new HashMap<>()).values()));
+    public void saveProfile(Player player) {
+        saveProfile(player.getUniqueId());
+    }
+
+    public void saveProfile(UUID uuid) {
+        Player player = ValhallaMMO.getInstance().getServer().getPlayer(uuid);
+        Map<Class<? extends Profile>, Profile> profiles = persistentProfiles.get(uuid);
+        if (profiles == null || profiles.isEmpty()) {
             return;
         }
 
-        if (persistentProfiles.containsKey(uuid)){
-            ValhallaMMO.getInstance().getServer().getScheduler().runTaskAsynchronously(ValhallaMMO.getInstance(), () -> {
-                try {
-                    if (!JoinLeaveListener.getLoadedProfiles().contains(uuid)) {
-                        releaseLock(lockKey, "SAVING");
-                        return;
-                    }
-                    for (Profile profile : persistentProfiles.getOrDefault(uuid, new HashMap<>()).values()) {
-                        insertOrUpdateProfile(uuid, conn, profile);
-                    }
-                } finally {
-                    releaseLock(lockKey, "SAVING");
-                }
-            });
+        String lockKey = uuid.toString();
+        String lock = UUID.randomUUID().toString();
+        if (redisConnected()) {
+            LOGGER.debug("Saving profile for {} with lock {}", uuid, lockKey);
         }
+        if (redisConnected() && !acquireLock(lockKey, lock)) {
+            // Queue saving
+            LOGGER.debug("Could not acquire lock for {}, queueing save", uuid);
+            saveQueue.add(new ArrayList<>(profiles.values()));
+            return;
+        }
+
+        ValhallaMMO.getInstance().getServer().getScheduler().runTaskAsynchronously(ValhallaMMO.getInstance(), () -> {
+            try {
+                if (!JoinLeaveListener.getLoadedProfiles().contains(uuid)) {
+                    if (redisConnected()) {
+                        LOGGER.debug("Player {} is not loaded, skipping save", uuid);
+                        releaseLock(lockKey, lock);
+                    }
+                    return;
+                }
+                for (Profile profile : profiles.values()) {
+                    insertOrUpdateProfile(uuid, conn, profile);
+                }
+            } finally {
+                if (redisConnected()) {
+                    LOGGER.debug("Releasing lock for {} with lock {}", uuid, lockKey);
+                    releaseLock(lockKey, lock);
+                }
+                if (player == null || !player.isOnline()) persistentProfiles.remove(uuid);
+            }
+        });
     }
 
     public static String leaderboardQuery(Profile p, String stat, Collection<String> extraStats){

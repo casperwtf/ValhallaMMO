@@ -18,12 +18,15 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.persistence.PersistentDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
 
 public class JoinLeaveListener implements Listener {
+    private static final Logger LOGGER = LoggerFactory.getLogger("Valhalla JOIN");
     private final NamespacedKey HEALTH = new NamespacedKey(ValhallaMMO.getInstance(), "cached_health");
     private static final Collection<UUID> loadedProfiles = new HashSet<>();
 
@@ -33,10 +36,17 @@ public class JoinLeaveListener implements Listener {
 
     @EventHandler
     public void prePlayerJoin(AsyncPlayerPreLoginEvent ev) throws InterruptedException {
-        if (ProfileRegistry.getPersistence().redisConnected() && ProfileRegistry.getPersistence().hasLock(ev.getUniqueId().toString(), "SAVING")) {
-            while (true) {
-                if (!ProfileRegistry.getPersistence().hasLock(ev.getUniqueId().toString(), "SAVING")) break;
-                Thread.sleep(50);
+        if (ProfileRegistry.getPersistence().redisConnected()) {
+            LOGGER.debug("Player {} is attempting to join", ev.getName());
+            if (ProfileRegistry.getPersistence().hasLock(ev.getUniqueId().toString())) {
+                LOGGER.debug("Has lock, waiting for unlock");
+                while (true) {
+                    if (!ProfileRegistry.getPersistence().hasLock(ev.getUniqueId().toString())) {
+                        LOGGER.debug("Lock released, proceeding with join");
+                        break;
+                    }
+                    Thread.sleep(50);
+                }
             }
         }
     }
